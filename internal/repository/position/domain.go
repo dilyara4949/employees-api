@@ -10,7 +10,7 @@ type Position struct {
 
 type Storage struct {
 	mu      sync.Mutex
-	storage map[string]Position
+	Storage map[string]Position
 }
 
 type Repository interface {

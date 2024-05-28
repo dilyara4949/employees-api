@@ -4,7 +4,7 @@ import "sync"
 
 type Storage struct {
 	mu      sync.Mutex
-	storage map[string]Employee
+	Storage map[string]Employee
 }
 
 type Employee struct {

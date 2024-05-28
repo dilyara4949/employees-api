@@ -29,7 +29,7 @@ func (e *employeeRepository) Create(employee Employee) (*Employee, error) {
 	}
 
 	employee.ID = uuid.New().String()
-	e.db.storage[employee.ID] = employee
+	e.db.Storage[employee.ID] = employee
 
 	return &employee, nil
 }
@@ -38,10 +38,10 @@ func (e *employeeRepository) Get(id string) (*Employee, error) {
 	e.db.mu.Lock()
 	defer e.db.mu.Unlock()
 
-	if _, ok := e.db.storage[id]; !ok {
+	if _, ok := e.db.Storage[id]; !ok {
 		return nil, fmt.Errorf("employee with id %s does not exists", id)
 	}
-	employee := e.db.storage[id]
+	employee := e.db.Storage[id]
 	return &employee, nil
 }
 
@@ -49,11 +49,11 @@ func (e *employeeRepository) Update(employee Employee) error {
 	e.db.mu.Lock()
 	defer e.db.mu.Unlock()
 
-	if _, ok := e.db.storage[employee.ID]; !ok {
+	if _, ok := e.db.Storage[employee.ID]; !ok {
 		return fmt.Errorf("employee does not exist")
 	}
 
-	e.db.storage[employee.ID] = employee
+	e.db.Storage[employee.ID] = employee
 	return nil
 }
 
@@ -61,11 +61,11 @@ func (e *employeeRepository) Delete(id string) error {
 	e.db.mu.Lock()
 	defer e.db.mu.Unlock()
 
-	if _, ok := e.db.storage[id]; !ok {
+	if _, ok := e.db.Storage[id]; !ok {
 		return fmt.Errorf("employee does not exist")
 	}
 
-	delete(e.db.storage, id)
+	delete(e.db.Storage, id)
 	return nil
 }
 
