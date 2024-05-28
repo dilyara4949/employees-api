@@ -1,0 +1,292 @@
+openapi: "3.0.0"
+info:
+  title: "Employee API Documentation"
+  version: "1.0.0"
+paths:
+  /employees:
+    get:
+      description: "get list of employees"
+      tags:
+        - employees
+      parameters:
+        - $ref: '#/components/parameters/PageLimit'
+        - $ref: '#/components/parameters/PageOffset'
+      responses:
+        '200':
+          description: "successfully returned a list of employees"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+        '500':
+          description: "server error"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+    post:
+      description: "create a new employee"
+      tags:
+        - employees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200':
+          description: "successfully created a new employee"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /employees/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+    get:
+      description: "get employee by id"
+      tags:
+        - employees
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: "request not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+    put:
+      description: "update employee by id"
+      tags:
+        - employees
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: "request not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+    delete:
+      description: "delete employee by id"
+      tags:
+        - employees
+      responses:
+        '204':
+          description: "OK"
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: "request not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+  /position:
+    get:
+      description: "get list of positions"
+      tags:
+        - positions
+      parameters:
+        - $ref: '#/components/parameters/PageLimit'
+        - $ref: '#/components/parameters/PageOffset'
+      responses:
+        '200':
+          description: "successfully returned a list of employees"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+    post:
+      description: "create a new position"
+      tags:
+        - positions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+      responses:
+        '200':
+          description: "successfully created a new position"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /position/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+    get:
+      description: "get position by id"
+      tags:
+        - positions
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: "request not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+    put:
+      description: "update position by id"
+      tags:
+        - positions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Position'
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: "request not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+    delete:
+      description: "delete position by id"
+      tags:
+        - positions
+      responses:
+        '204':
+          description: "OK"
+        '400':
+          description: "invalid request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':
+          description: "request not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+components:
+  schemas:
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        position_id:
+          type: string
+          description: reference to the position's id
+    Position:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        salary:
+          type: number
+    ErrorDetail:
+      type: object
+      properties:
+        message:
+          type: string
+  parameters:
+    PageLimit:
+      required: true
+      name: limit
+      in: query
+      description: limits the number of items on a page
+      schema:
+        type: integer
+    PageOffset:
+      required: true
+      name: offset
+      in: query
+      description: specifies the page number of the items to be displayed
+      schema:
+        type: integer
