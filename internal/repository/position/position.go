@@ -14,14 +14,14 @@ func NewPositionRepository(db *Storage) Repository {
 	return &positionRepository{db: db}
 }
 
-func (p *positionRepository) Create(position Position) (*Position, error) {
+func (p *positionRepository) Create(position Position) (Position, error) {
 	p.db.mu.Lock()
 	defer p.db.mu.Unlock()
 
 	position.ID = uuid.New().String()
 	p.db.Storage[position.ID] = position
 
-	return &position, nil
+	return position, nil
 }
 
 func (p *positionRepository) Get(id string) (*Position, error) {

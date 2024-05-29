@@ -14,10 +14,12 @@ func NewRouter(employeeStorage *employee.Storage, positionStorage *position.Stor
 	positionRepo := position.NewPositionRepository(positionStorage)
 	positionController := controller.NewPositionController(positionRepo)
 
-	// Create a new ServeMux and register handlers
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /position/{id}", controllerErrorHandler(positionController.GetPosition))
+	mux.HandleFunc("GET /positions/{id}", controllerErrorHandler(positionController.GetPosition))
+	mux.HandleFunc("POST /positions", controllerErrorHandler(positionController.CreatePosition))
+	mux.HandleFunc("DELETE /positions/{id}", controllerErrorHandler(positionController.DeletePosition))
+	mux.HandleFunc("PUT /positions/{id}", controllerErrorHandler(positionController.UpdatePosition))
 
 	log.Println("Starting server on :8080")
 	err := http.ListenAndServe(":8080", mux)
