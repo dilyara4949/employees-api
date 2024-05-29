@@ -14,9 +14,9 @@ type Storage struct {
 }
 
 type Repository interface {
-	Create(Position) (Position, error)
+	Create(*Position) error
 	Get(id string) (*Position, error)
 	Update(Position) error
 	Delete(id string) error
-	GetAll() ([]*Position, error)
+	GetAll() ([]Position, error)
 }

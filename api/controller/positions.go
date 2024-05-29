@@ -67,7 +67,7 @@ func (c *PositionController) CreatePosition(w http.ResponseWriter, r *http.Reque
 		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
 	}
 
-	if position, err = c.Repo.Create(position); err != nil {
+	if err = c.Repo.Create(&position); err != nil {
 		return &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err}
 	}
 

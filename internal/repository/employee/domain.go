@@ -15,7 +15,7 @@ type Employee struct {
 }
 
 type Repository interface {
-	Create(Employee) (*Employee, error)
+	Create(*Employee) error
 	Get(id string) (*Employee, error)
 	Update(Employee) error
 	Delete(id string) error
