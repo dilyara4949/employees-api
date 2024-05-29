@@ -1,4 +1,4 @@
-package position
+package domain
 
 import "sync"
 
@@ -8,12 +8,12 @@ type Position struct {
 	Salary int    `json:"salary"`
 }
 
-type Storage struct {
-	mu      sync.Mutex
+type PositionStorage struct {
+	Mu      sync.Mutex
 	Storage map[string]Position
 }
 
-type Repository interface {
+type PositionRepository interface {
 	Create(*Position) error
 	Get(id string) (*Position, error)
 	Update(Position) error

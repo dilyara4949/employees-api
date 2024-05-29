@@ -2,10 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
-
-	pos "github.com/dilyara4949/employees-api/internal/repository/position"
 )
 
 type HTTPError struct {
@@ -22,10 +21,10 @@ func (e *HTTPError) Error() string {
 }
 
 type PositionController struct {
-	Repo pos.Repository
+	Repo domain.PositionRepository
 }
 
-func NewPositionController(repo pos.Repository) *PositionController {
+func NewPositionController(repo domain.PositionRepository) *PositionController {
 	return &PositionController{repo}
 }
 
@@ -62,7 +61,7 @@ func (c *PositionController) CreatePosition(w http.ResponseWriter, r *http.Reque
 		return &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err}
 	}
 
-	var position pos.Position
+	var position domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
 		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
 	}
@@ -113,7 +112,7 @@ func (c *PositionController) UpdatePosition(w http.ResponseWriter, r *http.Reque
 		return &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err}
 	}
 
-	var position pos.Position
+	var position domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
 		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
 	}

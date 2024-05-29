@@ -1,9 +1,9 @@
-package employee
+package domain
 
 import "sync"
 
-type Storage struct {
-	mu      sync.Mutex
+type EmployeeStorage struct {
+	Mu      sync.Mutex
 	Storage map[string]Employee
 }
 
@@ -14,7 +14,7 @@ type Employee struct {
 	PositionID string `json:"position_id"`
 }
 
-type Repository interface {
+type EmployeeRepository interface {
 	Create(*Employee) error
 	Get(id string) (*Employee, error)
 	Update(Employee) error

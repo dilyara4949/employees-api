@@ -1,18 +1,26 @@
 package main
 
 import (
-	"github.com/dilyara4949/employees-api/api/route"
+	"github.com/dilyara4949/employees-api/internal/controller"
+	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/repository/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/position"
+	"github.com/dilyara4949/employees-api/internal/route"
 )
 
 func main() {
+	storageP := &domain.PositionStorage{
+		Storage: make(map[string]domain.Position),
+	}
+	storageE := &domain.EmployeeStorage{
+		Storage: make(map[string]domain.Employee),
+	}
 
-	storageP := &position.Storage{
-		Storage: make(map[string]position.Position),
-	}
-	storageE := &employee.Storage{
-		Storage: make(map[string]employee.Employee),
-	}
-	route.NewRouter(storageE, storageP)
+	positionRepo := position.NewPositionRepository(storageP)
+	positionController := controller.NewPositionController(positionRepo)
+
+	employeeRepo := employee.NewEmployeeRepository(storageE, positionRepo)
+	employeeController := controller.NewEmployeeController(employeeRepo)
+
+	route.SetUpRouter(employeeController, positionController)
 }

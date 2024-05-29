@@ -1,21 +1,12 @@
 package route
 
 import (
+	"github.com/dilyara4949/employees-api/internal/controller"
 	"log"
 	"net/http"
-
-	"github.com/dilyara4949/employees-api/api/controller"
-	"github.com/dilyara4949/employees-api/internal/repository/employee"
-	"github.com/dilyara4949/employees-api/internal/repository/position"
 )
 
-func NewRouter(employeeStorage *employee.Storage, positionStorage *position.Storage) {
-
-	positionRepo := position.NewPositionRepository(positionStorage)
-	positionController := controller.NewPositionController(positionRepo)
-
-	employeeRepo := employee.NewEmployeeRepository(employeeStorage, positionRepo)
-	employeeController := controller.NewEmployeeController(employeeRepo)
+func SetUpRouter(employeeController *controller.EmployeeController, positionController *controller.PositionController) {
 
 	mux := http.NewServeMux()
 

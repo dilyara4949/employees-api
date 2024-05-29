@@ -2,18 +2,16 @@ package controller
 
 import (
 	"encoding/json"
-	pos "github.com/dilyara4949/employees-api/internal/repository/employee"
+	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
-
-	emp "github.com/dilyara4949/employees-api/internal/repository/employee"
 )
 
 type EmployeeController struct {
-	Repo emp.Repository
+	Repo domain.EmployeeRepository
 }
 
-func NewEmployeeController(repo emp.Repository) *EmployeeController {
+func NewEmployeeController(repo domain.EmployeeRepository) *EmployeeController {
 	return &EmployeeController{repo}
 }
 
@@ -50,7 +48,7 @@ func (c *EmployeeController) CreateEmployee(w http.ResponseWriter, r *http.Reque
 		return &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err}
 	}
 
-	var employee pos.Employee
+	var employee domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
 		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
 	}
@@ -101,7 +99,7 @@ func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Reque
 		return &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err}
 	}
 
-	var employee emp.Employee
+	var employee domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
 		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
 	}

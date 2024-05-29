@@ -2,27 +2,27 @@ package employee
 
 import (
 	"fmt"
+	"github.com/dilyara4949/employees-api/internal/domain"
 
-	"github.com/dilyara4949/employees-api/internal/repository/position"
 	"github.com/google/uuid"
 )
 
 type PositionRepository interface {
-	Get(id string) (*position.Position, error)
+	Get(id string) (*domain.Position, error)
 }
 
 type employeeRepository struct {
-	db *Storage
+	db *domain.EmployeeStorage
 	p  PositionRepository
 }
 
-func NewEmployeeRepository(db *Storage, p PositionRepository) Repository {
+func NewEmployeeRepository(db *domain.EmployeeStorage, p PositionRepository) domain.EmployeeRepository {
 	return &employeeRepository{db: db, p: p}
 }
 
-func (e *employeeRepository) Create(employee *Employee) error {
-	e.db.mu.Lock()
-	defer e.db.mu.Unlock()
+func (e *employeeRepository) Create(employee *domain.Employee) error {
+	e.db.Mu.Lock()
+	defer e.db.Mu.Unlock()
 
 	if _, err := e.p.Get(employee.PositionID); err != nil {
 		return fmt.Errorf("error to create employee: %w", err)
@@ -34,9 +34,9 @@ func (e *employeeRepository) Create(employee *Employee) error {
 	return nil
 }
 
-func (e *employeeRepository) Get(id string) (*Employee, error) {
-	e.db.mu.Lock()
-	defer e.db.mu.Unlock()
+func (e *employeeRepository) Get(id string) (*domain.Employee, error) {
+	e.db.Mu.Lock()
+	defer e.db.Mu.Unlock()
 
 	if _, ok := e.db.Storage[id]; !ok {
 		return nil, fmt.Errorf("employee with id %s does not exists", id)
@@ -45,9 +45,9 @@ func (e *employeeRepository) Get(id string) (*Employee, error) {
 	return &employee, nil
 }
 
-func (e *employeeRepository) Update(employee Employee) error {
-	e.db.mu.Lock()
-	defer e.db.mu.Unlock()
+func (e *employeeRepository) Update(employee domain.Employee) error {
+	e.db.Mu.Lock()
+	defer e.db.Mu.Unlock()
 
 	if _, ok := e.db.Storage[employee.ID]; !ok {
 		return fmt.Errorf("employee does not exist")
@@ -62,8 +62,8 @@ func (e *employeeRepository) Update(employee Employee) error {
 }
 
 func (e *employeeRepository) Delete(id string) error {
-	e.db.mu.Lock()
-	defer e.db.mu.Unlock()
+	e.db.Mu.Lock()
+	defer e.db.Mu.Unlock()
 
 	if _, ok := e.db.Storage[id]; !ok {
 		return fmt.Errorf("employee does not exist")
@@ -73,6 +73,6 @@ func (e *employeeRepository) Delete(id string) error {
 	return nil
 }
 
-func (e *employeeRepository) GetAll() ([]Employee, error) {
+func (e *employeeRepository) GetAll() ([]domain.Employee, error) {
 	return nil, nil
 }
