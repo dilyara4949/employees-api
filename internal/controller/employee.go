@@ -15,107 +15,119 @@ func NewEmployeeController(repo domain.EmployeeRepository) *EmployeeController {
 	return &EmployeeController{repo}
 }
 
-func (c *EmployeeController) GetEmployee(w http.ResponseWriter, r *http.Request) error {
+func (c *EmployeeController) GetEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		return &HTTPError{Detail: "invalid method at get employee", Status: http.StatusMethodNotAllowed}
+		errorHandler(w, r, &HTTPError{Detail: "invalid method at get employee", Status: http.StatusMethodNotAllowed})
+		return
 	}
 
 	employeeID := r.PathValue("id")
 	employee, err := c.Repo.Get(employeeID)
 
 	if err != nil {
-		return &HTTPError{Detail: "error getting employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error getting employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	response, err := json.Marshal(employee)
 	if err != nil {
-		return &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
-	return nil
 }
 
-func (c *EmployeeController) CreateEmployee(w http.ResponseWriter, r *http.Request) error {
+func (c *EmployeeController) CreateEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		return &HTTPError{Detail: "invalid method at create employee", Status: http.StatusMethodNotAllowed}
+		errorHandler(w, r, &HTTPError{Detail: "invalid method at create employee", Status: http.StatusMethodNotAllowed})
+		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err})
+		return
 	}
 
 	var employee domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
-		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
+		return
 	}
 
 	if err = c.Repo.Create(&employee); err != nil {
-		return &HTTPError{Detail: "error creating employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error creating employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	response, err := json.Marshal(employee)
 	if err != nil {
-		return &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(response)
-	return nil
 }
 
-func (c *EmployeeController) DeleteEmployee(w http.ResponseWriter, r *http.Request) error {
+func (c *EmployeeController) DeleteEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
-		return &HTTPError{Detail: "invalid method at delete employee", Status: http.StatusMethodNotAllowed}
+		errorHandler(w, r, &HTTPError{Detail: "invalid method at delete employee", Status: http.StatusMethodNotAllowed})
+		return
 	}
 
 	employeeID := r.PathValue("id")
 	err := c.Repo.Delete(employeeID)
 
 	if err != nil {
-		return &HTTPError{Detail: "error deleting employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error deleting employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-	return nil
 }
 
-func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Request) error {
+func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
-		return &HTTPError{Detail: "invalid method at update employee", Status: http.StatusMethodNotAllowed}
+		errorHandler(w, r, &HTTPError{Detail: "invalid method at update employee", Status: http.StatusMethodNotAllowed})
+		return
 	}
 
 	employeeID := r.PathValue("id")
 	if employeeID == "" {
-		return &HTTPError{Detail: "missing employee ID", Status: http.StatusBadRequest}
+		errorHandler(w, r, &HTTPError{Detail: "missing employee ID", Status: http.StatusBadRequest})
+		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err})
+		return
 	}
 
 	var employee domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
-		return &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
+		return
 	}
 
 	employee.ID = employeeID
 	if err := c.Repo.Update(employee); err != nil {
-		return &HTTPError{Detail: "error updating employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error updating employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	response, err := json.Marshal(employee)
 	if err != nil {
-		return &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err}
+		errorHandler(w, r, &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
-	return nil
 }
