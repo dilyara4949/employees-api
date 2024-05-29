@@ -1,12 +1,14 @@
 package tokenutil
 
 import (
-	jwt "github.com/golang-jwt/jwt/v4"
+	"fmt"
 	"net/http"
 	"strings"
+
+	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-var secretKey = []byte("your_secret_key")
+var secretKey = []byte("my_secret_key")
 
 func JwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +23,8 @@ func JwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Bearer token required", http.StatusUnauthorized)
 			return
 		}
+
+		fmt.Println(tokenString)
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
