@@ -12,9 +12,11 @@ func SetUpRouter(employeeController *controller.EmployeeController, positionCont
 	mux.HandleFunc("POST /positions", tokenutil.JwtMiddleware(positionController.CreatePosition))
 	mux.HandleFunc("DELETE /positions/{id}", tokenutil.JwtMiddleware(positionController.DeletePosition))
 	mux.HandleFunc("PUT /positions/{id}", tokenutil.JwtMiddleware(positionController.UpdatePosition))
+	mux.HandleFunc("GET /positions", tokenutil.JwtMiddleware(positionController.GetAllPositions))
 
 	mux.HandleFunc("GET /employees/{id}", tokenutil.JwtMiddleware(employeeController.GetEmployee))
 	mux.HandleFunc("POST /employees", tokenutil.JwtMiddleware(employeeController.CreateEmployee))
 	mux.HandleFunc("DELETE /employees/{id}", tokenutil.JwtMiddleware(employeeController.DeleteEmployee))
 	mux.HandleFunc("PUT /employees/{id}", tokenutil.JwtMiddleware(employeeController.UpdateEmployee))
+	mux.HandleFunc("GET /employees", tokenutil.JwtMiddleware(employeeController.GetAllEmployees))
 }

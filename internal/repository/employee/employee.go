@@ -74,5 +74,12 @@ func (e *employeeRepository) Delete(id string) error {
 }
 
 func (e *employeeRepository) GetAll() ([]domain.Employee, error) {
-	return nil, nil
+	employees := make([]domain.Employee, 0)
+
+	e.db.Mu.Lock()
+	defer e.db.Mu.Unlock()
+	for _, employee := range e.db.Storage {
+		employees = append(employees, employee)
+	}
+	return employees, nil
 }

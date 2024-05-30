@@ -131,3 +131,25 @@ func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
+
+func (e *EmployeeController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all employees", Status: http.StatusMethodNotAllowed})
+		return
+	}
+
+	employees, err := e.Repo.GetAll()
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "error getting employees", Status: http.StatusInternalServerError, Cause: err})
+	}
+
+	response, err := json.Marshal(employees)
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "error at marshal employees", Status: http.StatusInternalServerError, Cause: err})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}

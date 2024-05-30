@@ -1,7 +1,6 @@
 package tokenutil
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -23,8 +22,6 @@ func JwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Bearer token required", http.StatusUnauthorized)
 			return
 		}
-
-		fmt.Println(tokenString)
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

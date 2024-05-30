@@ -131,3 +131,25 @@ func (c *PositionController) UpdatePosition(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
+
+func (c *PositionController) GetAllPositions(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all positions", Status: http.StatusMethodNotAllowed})
+		return
+	}
+
+	positions, err := c.Repo.GetAll()
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "error getting positions", Status: http.StatusInternalServerError, Cause: err})
+	}
+
+	response, err := json.Marshal(positions)
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "error at marshal positions", Status: http.StatusInternalServerError, Cause: err})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}

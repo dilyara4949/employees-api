@@ -62,5 +62,13 @@ func (p *positionRepository) Delete(id string) error {
 }
 
 func (p *positionRepository) GetAll() ([]domain.Position, error) {
-	return nil, nil
+	positions := make([]domain.Position, 0)
+
+	p.db.Mu.Lock()
+	defer p.db.Mu.Unlock()
+
+	for _, v := range p.db.Storage {
+		positions = append(positions, v)
+	}
+	return positions, nil
 }
