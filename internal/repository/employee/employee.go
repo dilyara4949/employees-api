@@ -8,7 +8,7 @@ import (
 )
 
 type PositionsRepository interface {
-	Get(id string) (*domain.Positions, error)
+	Get(id string) (*domain.Position, error)
 }
 
 type employeeRepository struct {
@@ -20,7 +20,7 @@ func NewEmployeesRepository(db *domain.EmployeesStorage, p PositionsRepository) 
 	return &employeeRepository{db: db, p: p}
 }
 
-func (e *employeeRepository) Create(employee *domain.Employees) error {
+func (e *employeeRepository) Create(employee *domain.Employee) error {
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()
 
@@ -34,7 +34,7 @@ func (e *employeeRepository) Create(employee *domain.Employees) error {
 	return nil
 }
 
-func (e *employeeRepository) Get(id string) (*domain.Employees, error) {
+func (e *employeeRepository) Get(id string) (*domain.Employee, error) {
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()
 
@@ -45,7 +45,7 @@ func (e *employeeRepository) Get(id string) (*domain.Employees, error) {
 	return &employee, nil
 }
 
-func (e *employeeRepository) Update(employee domain.Employees) error {
+func (e *employeeRepository) Update(employee domain.Employee) error {
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()
 
@@ -73,8 +73,8 @@ func (e *employeeRepository) Delete(id string) error {
 	return nil
 }
 
-func (e *employeeRepository) GetAll() ([]domain.Employees, error) {
-	employees := make([]domain.Employees, 0)
+func (e *employeeRepository) GetAll() ([]domain.Employee, error) {
+	employees := make([]domain.Employee, 0)
 
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()

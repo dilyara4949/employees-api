@@ -15,7 +15,7 @@ func NewPositionsRepository(db *domain.PositionsStorage) domain.PositionsReposit
 	return &positionsRepository{db: db}
 }
 
-func (p *positionsRepository) Create(position *domain.Positions) error {
+func (p *positionsRepository) Create(position *domain.Position) error {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -25,7 +25,7 @@ func (p *positionsRepository) Create(position *domain.Positions) error {
 	return nil
 }
 
-func (p *positionsRepository) Get(id string) (*domain.Positions, error) {
+func (p *positionsRepository) Get(id string) (*domain.Position, error) {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -37,7 +37,7 @@ func (p *positionsRepository) Get(id string) (*domain.Positions, error) {
 	return &position, nil
 }
 
-func (p *positionsRepository) Update(position domain.Positions) error {
+func (p *positionsRepository) Update(position domain.Position) error {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -61,8 +61,8 @@ func (p *positionsRepository) Delete(id string) error {
 	return nil
 }
 
-func (p *positionsRepository) GetAll() ([]domain.Positions, error) {
-	positions := make([]domain.Positions, 0)
+func (p *positionsRepository) GetAll() ([]domain.Position, error) {
+	positions := make([]domain.Position, 0)
 
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()

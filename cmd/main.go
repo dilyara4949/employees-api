@@ -12,10 +12,10 @@ import (
 
 func main() {
 	storageP := &domain.PositionsStorage{
-		Storage: make(map[string]domain.Positions),
+		Storage: make(map[string]domain.Position),
 	}
 	storageE := &domain.EmployeesStorage{
-		Storage: make(map[string]domain.Employees),
+		Storage: make(map[string]domain.Employee),
 	}
 
 	positionRepo := position.NewPositionsRepository(storageP)
