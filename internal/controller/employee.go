@@ -138,10 +138,7 @@ func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	employees, err := e.Repo.GetAll()
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error getting employees", Status: http.StatusInternalServerError, Cause: err})
-	}
+	employees := e.Repo.GetAll()
 
 	response, err := json.Marshal(employees)
 	if err != nil {

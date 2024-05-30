@@ -5,16 +5,17 @@ import (
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/repository/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/position"
+	"github.com/dilyara4949/employees-api/internal/repository/storage"
 	"github.com/dilyara4949/employees-api/internal/route"
 	"log"
 	"net/http"
 )
 
 func main() {
-	storageP := &domain.PositionsStorage{
+	storageP := &storage.PositionsStorage{
 		Storage: make(map[string]domain.Position),
 	}
-	storageE := &domain.EmployeesStorage{
+	storageE := &storage.EmployeesStorage{
 		Storage: make(map[string]domain.Employee),
 	}
 

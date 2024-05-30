@@ -1,12 +1,5 @@
 package domain
 
-import "sync"
-
-type EmployeesStorage struct {
-	Mu      sync.Mutex
-	Storage map[string]Employee
-}
-
 type Employee struct {
 	ID         string `json:"id"`
 	FirstName  string `json:"firstname"`
@@ -19,5 +12,5 @@ type EmployeesRepository interface {
 	Get(id string) (*Employee, error)
 	Update(Employee) error
 	Delete(id string) error
-	GetAll() ([]Employee, error)
+	GetAll() []Employee
 }
