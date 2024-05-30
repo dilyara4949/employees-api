@@ -8,9 +8,6 @@ paths:
       description: "get list of employees"
       tags:
         - employees
-      parameters:
-        - $ref: '#/components/parameters/PageLimit'
-        - $ref: '#/components/parameters/PageOffset'
       responses:
         '200':
           description: "successfully returned a list of employees"
@@ -19,15 +16,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Employee'
+                  $ref: '#/components/schemas/Employees'
         '500':
           description: "server error"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Employee'
+                $ref: '#/components/schemas/ErrorDetail'
     post:
       description: "create a new employee"
       tags:
@@ -37,14 +32,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Employee'
+              $ref: '#/components/schemas/Employees'
       responses:
         '200':
           description: "successfully created a new employee"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                $ref: '#/components/schemas/Employees'
         '400':
           description: "invalid request"
           content:
@@ -68,7 +63,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                $ref: '#/components/schemas/Employees'
         '400':
           description: "invalid request"
           content:
@@ -90,14 +85,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Employee'
+              $ref: '#/components/schemas/Employees'
       responses:
         '200':
           description: "OK"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Employee'
+                $ref: '#/components/schemas/Employees'
         '400':
           description: "invalid request"
           content:
@@ -129,14 +124,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDetail"
-  /position:
+  /positions:
     get:
       description: "get list of positions"
       tags:
         - positions
-      parameters:
-        - $ref: '#/components/parameters/PageLimit'
-        - $ref: '#/components/parameters/PageOffset'
       responses:
         '200':
           description: "successfully returned a list of employees"
@@ -145,7 +137,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Position'
+                  $ref: '#/components/schemas/Positions'
     post:
       description: "create a new position"
       tags:
@@ -155,21 +147,27 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Position'
+              $ref: '#/components/schemas/Positions'
       responses:
         '200':
           description: "successfully created a new position"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Position'
+                $ref: '#/components/schemas/Positions'
         '400':
           description: "invalid request"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDetail'
-  /position/{id}:
+        '500':
+          description: "server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /positions/{id}:
     parameters:
       - in: path
         name: id
@@ -186,7 +184,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Position'
+                $ref: '#/components/schemas/Positions'
         '400':
           description: "invalid request"
           content:
@@ -208,14 +206,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Position'
+              $ref: '#/components/schemas/Positions'
       responses:
         '200':
           description: "OK"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Position'
+                $ref: '#/components/schemas/Positions'
         '400':
           description: "invalid request"
           content:
@@ -249,7 +247,7 @@ paths:
                 $ref: "#/components/schemas/ErrorDetail"
 components:
   schemas:
-    Employee:
+    Employees:
       type: object
       properties:
         id:
@@ -261,7 +259,7 @@ components:
         position_id:
           type: string
           description: reference to the position's id
-    Position:
+    Positions:
       type: object
       properties:
         id:
@@ -275,18 +273,3 @@ components:
       properties:
         message:
           type: string
-  parameters:
-    PageLimit:
-      required: true
-      name: limit
-      in: query
-      description: limits the number of items on a page
-      schema:
-        type: integer
-    PageOffset:
-      required: true
-      name: offset
-      in: query
-      description: specifies the page number of the items to be displayed
-      schema:
-        type: integer
