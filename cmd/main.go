@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/dilyara4949/employees-api/internal/controller"
-	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/repository/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/position"
 	"github.com/dilyara4949/employees-api/internal/repository/storage"
@@ -12,17 +11,13 @@ import (
 )
 
 func main() {
-	storageP := &storage.PositionsStorage{
-		Storage: make(map[string]domain.Position),
-	}
-	storageE := &storage.EmployeesStorage{
-		Storage: make(map[string]domain.Employee),
-	}
+	positionsStorage := storage.NewPositionsStorage()
+	employeesStorage := storage.NewEmployeesStorage()
 
-	positionRepo := position.NewPositionsRepository(storageP)
+	positionRepo := position.NewPositionsRepository(positionsStorage)
 	positionController := controller.NewPositionsController(positionRepo)
 
-	employeeRepo := employee.NewEmployeesRepository(storageE, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(employeesStorage, positionRepo)
 	employeeController := controller.NewEmployeesController(employeeRepo)
 
 	mux := http.NewServeMux()

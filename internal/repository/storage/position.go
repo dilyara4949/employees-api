@@ -11,6 +11,12 @@ type PositionsStorage struct {
 	Storage map[string]domain.Position
 }
 
+func NewPositionsStorage() *PositionsStorage {
+	return &PositionsStorage{
+		Storage: make(map[string]domain.Position),
+	}
+}
+
 func (storage *PositionsStorage) Add(position domain.Position) {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()

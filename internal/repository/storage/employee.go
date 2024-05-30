@@ -11,6 +11,12 @@ type EmployeesStorage struct {
 	Storage map[string]domain.Employee
 }
 
+func NewEmployeesStorage() *EmployeesStorage {
+	return &EmployeesStorage{
+		Storage: make(map[string]domain.Employee),
+	}
+}
+
 func (storage *EmployeesStorage) Add(employee domain.Employee) {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()
