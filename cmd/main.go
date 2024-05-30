@@ -11,18 +11,18 @@ import (
 )
 
 func main() {
-	storageP := &domain.PositionStorage{
-		Storage: make(map[string]domain.Position),
+	storageP := &domain.PositionsStorage{
+		Storage: make(map[string]domain.Positions),
 	}
-	storageE := &domain.EmployeeStorage{
-		Storage: make(map[string]domain.Employee),
+	storageE := &domain.EmployeesStorage{
+		Storage: make(map[string]domain.Employees),
 	}
 
-	positionRepo := position.NewPositionRepository(storageP)
-	positionController := controller.NewPositionController(positionRepo)
+	positionRepo := position.NewPositionsRepository(storageP)
+	positionController := controller.NewPositionsController(positionRepo)
 
-	employeeRepo := employee.NewEmployeeRepository(storageE, positionRepo)
-	employeeController := controller.NewEmployeeController(employeeRepo)
+	employeeRepo := employee.NewEmployeesRepository(storageE, positionRepo)
+	employeeController := controller.NewEmployeesController(employeeRepo)
 
 	mux := http.NewServeMux()
 

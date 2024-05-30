@@ -7,15 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type positionRepository struct {
-	db *domain.PositionStorage
+type positionsRepository struct {
+	db *domain.PositionsStorage
 }
 
-func NewPositionRepository(db *domain.PositionStorage) domain.PositionRepository {
-	return &positionRepository{db: db}
+func NewPositionsRepository(db *domain.PositionsStorage) domain.PositionsRepository {
+	return &positionsRepository{db: db}
 }
 
-func (p *positionRepository) Create(position *domain.Position) error {
+func (p *positionsRepository) Create(position *domain.Positions) error {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -25,7 +25,7 @@ func (p *positionRepository) Create(position *domain.Position) error {
 	return nil
 }
 
-func (p *positionRepository) Get(id string) (*domain.Position, error) {
+func (p *positionsRepository) Get(id string) (*domain.Positions, error) {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -37,7 +37,7 @@ func (p *positionRepository) Get(id string) (*domain.Position, error) {
 	return &position, nil
 }
 
-func (p *positionRepository) Update(position domain.Position) error {
+func (p *positionsRepository) Update(position domain.Positions) error {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -49,7 +49,7 @@ func (p *positionRepository) Update(position domain.Position) error {
 	return nil
 }
 
-func (p *positionRepository) Delete(id string) error {
+func (p *positionsRepository) Delete(id string) error {
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()
 
@@ -61,8 +61,8 @@ func (p *positionRepository) Delete(id string) error {
 	return nil
 }
 
-func (p *positionRepository) GetAll() ([]domain.Position, error) {
-	positions := make([]domain.Position, 0)
+func (p *positionsRepository) GetAll() ([]domain.Positions, error) {
+	positions := make([]domain.Positions, 0)
 
 	p.db.Mu.Lock()
 	defer p.db.Mu.Unlock()

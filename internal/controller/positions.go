@@ -7,15 +7,15 @@ import (
 	"net/http"
 )
 
-type PositionController struct {
-	Repo domain.PositionRepository
+type PositionsController struct {
+	Repo domain.PositionsRepository
 }
 
-func NewPositionController(repo domain.PositionRepository) *PositionController {
-	return &PositionController{repo}
+func NewPositionsController(repo domain.PositionsRepository) *PositionsController {
+	return &PositionsController{repo}
 }
 
-func (c *PositionController) GetPosition(w http.ResponseWriter, r *http.Request) {
+func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at get position", Status: http.StatusMethodNotAllowed})
 		return
@@ -40,7 +40,7 @@ func (c *PositionController) GetPosition(w http.ResponseWriter, r *http.Request)
 	w.Write(response)
 }
 
-func (c *PositionController) CreatePosition(w http.ResponseWriter, r *http.Request) {
+func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at create position", Status: http.StatusMethodNotAllowed})
 		return
@@ -52,7 +52,7 @@ func (c *PositionController) CreatePosition(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var position domain.Position
+	var position domain.Positions
 	if err := json.Unmarshal(body, &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -74,7 +74,7 @@ func (c *PositionController) CreatePosition(w http.ResponseWriter, r *http.Reque
 	w.Write(response)
 }
 
-func (c *PositionController) DeletePosition(w http.ResponseWriter, r *http.Request) {
+func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at delete position", Status: http.StatusMethodNotAllowed})
 		return
@@ -91,7 +91,7 @@ func (c *PositionController) DeletePosition(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (c *PositionController) UpdatePosition(w http.ResponseWriter, r *http.Request) {
+func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at update position", Status: http.StatusMethodNotAllowed})
 		return
@@ -109,7 +109,7 @@ func (c *PositionController) UpdatePosition(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var position domain.Position
+	var position domain.Positions
 	if err := json.Unmarshal(body, &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -132,7 +132,7 @@ func (c *PositionController) UpdatePosition(w http.ResponseWriter, r *http.Reque
 	w.Write(response)
 }
 
-func (c *PositionController) GetAllPositions(w http.ResponseWriter, r *http.Request) {
+func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all positions", Status: http.StatusMethodNotAllowed})
 		return

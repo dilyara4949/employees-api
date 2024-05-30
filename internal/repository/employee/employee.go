@@ -7,20 +7,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type PositionRepository interface {
-	Get(id string) (*domain.Position, error)
+type PositionsRepository interface {
+	Get(id string) (*domain.Positions, error)
 }
 
 type employeeRepository struct {
-	db *domain.EmployeeStorage
-	p  PositionRepository
+	db *domain.EmployeesStorage
+	p  PositionsRepository
 }
 
-func NewEmployeeRepository(db *domain.EmployeeStorage, p PositionRepository) domain.EmployeeRepository {
+func NewEmployeesRepository(db *domain.EmployeesStorage, p PositionsRepository) domain.EmployeesRepository {
 	return &employeeRepository{db: db, p: p}
 }
 
-func (e *employeeRepository) Create(employee *domain.Employee) error {
+func (e *employeeRepository) Create(employee *domain.Employees) error {
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()
 
@@ -34,7 +34,7 @@ func (e *employeeRepository) Create(employee *domain.Employee) error {
 	return nil
 }
 
-func (e *employeeRepository) Get(id string) (*domain.Employee, error) {
+func (e *employeeRepository) Get(id string) (*domain.Employees, error) {
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()
 
@@ -45,7 +45,7 @@ func (e *employeeRepository) Get(id string) (*domain.Employee, error) {
 	return &employee, nil
 }
 
-func (e *employeeRepository) Update(employee domain.Employee) error {
+func (e *employeeRepository) Update(employee domain.Employees) error {
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()
 
@@ -73,8 +73,8 @@ func (e *employeeRepository) Delete(id string) error {
 	return nil
 }
 
-func (e *employeeRepository) GetAll() ([]domain.Employee, error) {
-	employees := make([]domain.Employee, 0)
+func (e *employeeRepository) GetAll() ([]domain.Employees, error) {
+	employees := make([]domain.Employees, 0)
 
 	e.db.Mu.Lock()
 	defer e.db.Mu.Unlock()

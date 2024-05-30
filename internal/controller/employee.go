@@ -7,15 +7,15 @@ import (
 	"net/http"
 )
 
-type EmployeeController struct {
-	Repo domain.EmployeeRepository
+type EmployeesController struct {
+	Repo domain.EmployeesRepository
 }
 
-func NewEmployeeController(repo domain.EmployeeRepository) *EmployeeController {
-	return &EmployeeController{repo}
+func NewEmployeesController(repo domain.EmployeesRepository) *EmployeesController {
+	return &EmployeesController{repo}
 }
 
-func (c *EmployeeController) GetEmployee(w http.ResponseWriter, r *http.Request) {
+func (c *EmployeesController) GetEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at get employee", Status: http.StatusMethodNotAllowed})
 		return
@@ -40,7 +40,7 @@ func (c *EmployeeController) GetEmployee(w http.ResponseWriter, r *http.Request)
 	w.Write(response)
 }
 
-func (c *EmployeeController) CreateEmployee(w http.ResponseWriter, r *http.Request) {
+func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at create employee", Status: http.StatusMethodNotAllowed})
 		return
@@ -52,7 +52,7 @@ func (c *EmployeeController) CreateEmployee(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var employee domain.Employee
+	var employee domain.Employees
 	if err := json.Unmarshal(body, &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -74,7 +74,7 @@ func (c *EmployeeController) CreateEmployee(w http.ResponseWriter, r *http.Reque
 	w.Write(response)
 }
 
-func (c *EmployeeController) DeleteEmployee(w http.ResponseWriter, r *http.Request) {
+func (c *EmployeesController) DeleteEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at delete employee", Status: http.StatusMethodNotAllowed})
 		return
@@ -91,7 +91,7 @@ func (c *EmployeeController) DeleteEmployee(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Request) {
+func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at update employee", Status: http.StatusMethodNotAllowed})
 		return
@@ -109,7 +109,7 @@ func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var employee domain.Employee
+	var employee domain.Employees
 	if err := json.Unmarshal(body, &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -132,7 +132,7 @@ func (c *EmployeeController) UpdateEmployee(w http.ResponseWriter, r *http.Reque
 	w.Write(response)
 }
 
-func (e *EmployeeController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
+func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all employees", Status: http.StatusMethodNotAllowed})
 		return

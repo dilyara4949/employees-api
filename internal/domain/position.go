@@ -2,21 +2,21 @@ package domain
 
 import "sync"
 
-type Position struct {
+type Positions struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
 	Salary int    `json:"salary"`
 }
 
-type PositionStorage struct {
+type PositionsStorage struct {
 	Mu      sync.Mutex
-	Storage map[string]Position
+	Storage map[string]Positions
 }
 
-type PositionRepository interface {
-	Create(*Position) error
-	Get(id string) (*Position, error)
-	Update(Position) error
+type PositionsRepository interface {
+	Create(*Positions) error
+	Get(id string) (*Positions, error)
+	Update(Positions) error
 	Delete(id string) error
-	GetAll() ([]Position, error)
+	GetAll() ([]Positions, error)
 }
