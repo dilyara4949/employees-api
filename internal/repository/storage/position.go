@@ -2,8 +2,9 @@ package storage
 
 import (
 	"errors"
-	"github.com/dilyara4949/employees-api/internal/domain"
 	"sync"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type PositionsStorage struct {
@@ -61,7 +62,7 @@ func (storage *PositionsStorage) All() []domain.Position {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()
 
-	var positions []domain.Position
+	positions := make([]domain.Position, 0)
 
 	for _, position := range storage.Storage {
 		positions = append(positions, position)

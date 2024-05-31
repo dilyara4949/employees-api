@@ -2,8 +2,9 @@ package storage
 
 import (
 	"errors"
-	"github.com/dilyara4949/employees-api/internal/domain"
 	"sync"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type EmployeesStorage struct {
@@ -60,7 +61,7 @@ func (storage *EmployeesStorage) Delete(id string) error {
 func (storage *EmployeesStorage) All() []domain.Employee {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()
-	var employees []domain.Employee
+	employees := make([]domain.Employee, 0)
 	for _, employee := range storage.Storage {
 		employees = append(employees, employee)
 	}
