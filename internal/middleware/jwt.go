@@ -1,4 +1,4 @@
-package tokenutil
+package middleware
 
 import (
 	"net/http"
