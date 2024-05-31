@@ -7,9 +7,15 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-//var secretKey = []byte("my_secret_key")
+type JWTAuth struct {
+	secret string
+}
 
-func JwtMiddleware(next http.HandlerFunc, secret string) http.HandlerFunc {
+func NewJWTAuth(secret string) *JWTAuth {
+	return &JWTAuth{secret}
+}
+
+func (j *JWTAuth) Auth(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -27,7 +33,7 @@ func JwtMiddleware(next http.HandlerFunc, secret string) http.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.NewValidationError("unexpected signing method", jwt.ValidationErrorSignatureInvalid)
 			}
-			return []byte(secret), nil
+			return []byte(j.secret), nil
 		})
 
 		if err != nil || !token.Valid {
@@ -35,6 +41,6 @@ func JwtMiddleware(next http.HandlerFunc, secret string) http.HandlerFunc {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		h.ServeHTTP(w, r)
 	}
 }

@@ -9,15 +9,18 @@ import (
 )
 
 func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, env *internal.Env, mux *http.ServeMux) {
-	mux.HandleFunc("GET /positions/{id}", middleware.JwtMiddleware(positionsController.GetPosition, env.JWTTokenSecret))
-	mux.HandleFunc("POST /positions", middleware.JwtMiddleware(positionsController.CreatePosition, env.JWTTokenSecret))
-	mux.HandleFunc("DELETE /positions/{id}", middleware.JwtMiddleware(positionsController.DeletePosition, env.JWTTokenSecret))
-	mux.HandleFunc("PUT /positions/{id}", middleware.JwtMiddleware(positionsController.UpdatePosition, env.JWTTokenSecret))
-	mux.HandleFunc("GET /positions", middleware.JwtMiddleware(positionsController.GetAllPositions, env.JWTTokenSecret))
 
-	mux.HandleFunc("GET /employees/{id}", middleware.JwtMiddleware(employeesController.GetEmployee, env.JWTTokenSecret))
-	mux.HandleFunc("POST /employees", middleware.JwtMiddleware(employeesController.CreateEmployee, env.JWTTokenSecret))
-	mux.HandleFunc("DELETE /employees/{id}", middleware.JwtMiddleware(employeesController.DeleteEmployee, env.JWTTokenSecret))
-	mux.HandleFunc("PUT /employees/{id}", middleware.JwtMiddleware(employeesController.UpdateEmployee, env.JWTTokenSecret))
-	mux.HandleFunc("GET /employees", middleware.JwtMiddleware(employeesController.GetAllEmployees, env.JWTTokenSecret))
+	auth := middleware.NewJWTAuth(env.JWTTokenSecret)
+
+	mux.HandleFunc("GET /positions/{id}", auth.Auth(positionsController.GetPosition))
+	mux.HandleFunc("POST /positions", auth.Auth(positionsController.CreatePosition))
+	mux.HandleFunc("DELETE /positions/{id}", auth.Auth(positionsController.DeletePosition))
+	mux.HandleFunc("PUT /positions/{id}", auth.Auth(positionsController.UpdatePosition))
+	mux.HandleFunc("GET /positions", auth.Auth(positionsController.GetAllPositions))
+
+	mux.HandleFunc("GET /employees/{id}", auth.Auth(employeesController.GetEmployee))
+	mux.HandleFunc("POST /employees", auth.Auth(employeesController.CreateEmployee))
+	mux.HandleFunc("DELETE /employees/{id}", auth.Auth(employeesController.DeleteEmployee))
+	mux.HandleFunc("PUT /employees/{id}", auth.Auth(employeesController.UpdateEmployee))
+	mux.HandleFunc("GET /employees", auth.Auth(employeesController.GetAllEmployees))
 }
