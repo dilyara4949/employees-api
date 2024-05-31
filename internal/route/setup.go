@@ -12,15 +12,15 @@ func SetUpRouter(employeesController *controller.EmployeesController, positionsC
 
 	auth := middleware.NewJWTAuth(env.JWTTokenSecret)
 
-	mux.HandleFunc("GET /positions/{id}", auth.Auth(positionsController.GetPosition))
-	mux.HandleFunc("POST /positions", auth.Auth(positionsController.CreatePosition))
-	mux.HandleFunc("DELETE /positions/{id}", auth.Auth(positionsController.DeletePosition))
-	mux.HandleFunc("PUT /positions/{id}", auth.Auth(positionsController.UpdatePosition))
-	mux.HandleFunc("GET /positions", auth.Auth(positionsController.GetAllPositions))
+	mux.HandleFunc("GET /positions/{id}", middleware.Adapt(auth.Auth(positionsController.GetPosition), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("POST /positions", middleware.Adapt(auth.Auth(positionsController.CreatePosition), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("DELETE /positions/{id}", middleware.Adapt(auth.Auth(positionsController.DeletePosition), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("PUT /positions/{id}", middleware.Adapt(auth.Auth(positionsController.UpdatePosition), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("GET /positions", middleware.Adapt(auth.Auth(positionsController.GetAllPositions), middleware.Logger(), middleware.СorrelationIDMiddleware()))
 
-	mux.HandleFunc("GET /employees/{id}", auth.Auth(employeesController.GetEmployee))
-	mux.HandleFunc("POST /employees", auth.Auth(employeesController.CreateEmployee))
-	mux.HandleFunc("DELETE /employees/{id}", auth.Auth(employeesController.DeleteEmployee))
-	mux.HandleFunc("PUT /employees/{id}", auth.Auth(employeesController.UpdateEmployee))
-	mux.HandleFunc("GET /employees", auth.Auth(employeesController.GetAllEmployees))
+	mux.HandleFunc("GET /employees/{id}", middleware.Adapt(auth.Auth(employeesController.GetEmployee), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("POST /employees", middleware.Adapt(auth.Auth(employeesController.CreateEmployee), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("DELETE /employees/{id}", middleware.Adapt(auth.Auth(employeesController.DeleteEmployee), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("PUT /employees/{id}", middleware.Adapt(auth.Auth(employeesController.UpdateEmployee), middleware.Logger(), middleware.СorrelationIDMiddleware()))
+	mux.HandleFunc("GET /employees", middleware.Adapt(auth.Auth(employeesController.GetAllEmployees), middleware.Logger(), middleware.СorrelationIDMiddleware()))
 }

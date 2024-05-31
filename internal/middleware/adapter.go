@@ -6,9 +6,9 @@ import (
 
 type Adapter func(http.Handler) http.HandlerFunc
 
-func Adapt(h http.HandlerFunc, adapters ...Adapter) http.HandlerFunc {
-	for _, adapter := range adapters {
-		h = adapter(h)
+func Adapt(endpoint http.HandlerFunc, middlewares ...Adapter) http.HandlerFunc {
+	for _, adapter := range middlewares {
+		endpoint = adapter(endpoint)
 	}
-	return h
+	return endpoint
 }
