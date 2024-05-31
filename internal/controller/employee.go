@@ -52,7 +52,7 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var employee domain.Employees
+	var employee domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -109,7 +109,7 @@ func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var employee domain.Employees
+	var employee domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -138,10 +138,7 @@ func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	employees, err := e.Repo.GetAll()
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error getting employees", Status: http.StatusInternalServerError, Cause: err})
-	}
+	employees := e.Repo.GetAll()
 
 	response, err := json.Marshal(employees)
 	if err != nil {

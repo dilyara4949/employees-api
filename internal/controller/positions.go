@@ -52,7 +52,7 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var position domain.Positions
+	var position domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -109,7 +109,7 @@ func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var position domain.Positions
+	var position domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -138,10 +138,7 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	positions, err := c.Repo.GetAll()
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error getting positions", Status: http.StatusInternalServerError, Cause: err})
-	}
+	positions := c.Repo.GetAll()
 
 	response, err := json.Marshal(positions)
 	if err != nil {
