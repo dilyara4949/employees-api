@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func СorrelationIDMiddleware() Adapter {
+func CorrelationIDMiddleware() Adapter {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			correlationID := r.Header.Get(employees_api.CorrelationID)
