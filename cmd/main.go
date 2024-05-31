@@ -24,15 +24,12 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	env, err := internal.NewEnv()
-	if err != nil {
-		log.Fatalf("failed to get env variables: %s", err)
-	}
+	env := internal.NewEnv()
 
 	route.SetUpRouter(employeeController, positionController, env, mux)
 
 	log.Println("Starting server on :8080")
-	err = http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
