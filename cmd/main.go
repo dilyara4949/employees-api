@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/dilyara4949/employees-api/internal/config"
 	"log"
 	"net/http"
 
-	"github.com/dilyara4949/employees-api/internal"
 	"github.com/dilyara4949/employees-api/internal/controller"
 	"github.com/dilyara4949/employees-api/internal/repository/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/position"
@@ -24,9 +24,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	env := internal.NewEnv()
+	config := config.NewConfig()
 
-	route.SetUpRouter(employeeController, positionController, env, mux)
+	route.SetUpRouter(employeeController, positionController, config, mux)
 
 	log.Println("Starting server on :8080")
 	err := http.ListenAndServe(":8080", mux)
