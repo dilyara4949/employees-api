@@ -132,13 +132,13 @@ func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Requ
 	w.Write(response)
 }
 
-func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
+func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all employees", Status: http.StatusMethodNotAllowed})
 		return
 	}
 
-	employees := e.Repo.GetAll()
+	employees := c.Repo.GetAll()
 
 	response, err := json.Marshal(employees)
 	if err != nil {
