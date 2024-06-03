@@ -8,9 +8,9 @@ import (
 	"github.com/dilyara4949/employees-api/internal/middleware"
 )
 
-func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, config config.Config, mux *http.ServeMux) {
+func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, configs config.Config, mux *http.ServeMux) {
 
-	auth := middleware.NewJWTAuth(config.JWTTokenSecret)
+	auth := middleware.NewJWTAuth(configs.JWTTokenSecret)
 
 	mux.HandleFunc("GET /positions/{id}", middleware.Adapt(auth.Auth(positionsController.GetPosition), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
 	mux.HandleFunc("POST /positions", middleware.Adapt(auth.Auth(positionsController.CreatePosition), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))

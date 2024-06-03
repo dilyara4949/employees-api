@@ -24,9 +24,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	config := config.NewConfig()
+	configs := config.NewConfig()
 
-	route.SetUpRouter(employeeController, positionController, config, mux)
+	route.SetUpRouter(employeeController, positionController, configs, mux)
 
 	log.Println("Starting server on :8080")
 	err := http.ListenAndServe(":8080", mux)
