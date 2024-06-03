@@ -9,7 +9,7 @@ import (
 
 const CorrelationID = "X-Correlation-ID"
 
-func CorrelationIDMiddleware() Adapter {
+func CorrelationIDMiddleware() Middleware {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			correlationID := r.Header.Get(CorrelationID)

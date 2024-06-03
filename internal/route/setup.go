@@ -10,17 +10,29 @@ import (
 
 func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, config conf.Config, mux *http.ServeMux) {
 
-	auth := middleware.NewJWTAuth(config.JWTTokenSecret)
+	//auth := middleware.NewJWTAuth(config.JWTTokenSecret)
 
-	mux.HandleFunc("GET /positions/{id}", middleware.Adapt(auth.Auth(positionsController.GetPosition), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("POST /positions", middleware.Adapt(auth.Auth(positionsController.CreatePosition), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("DELETE /positions/{id}", middleware.Adapt(auth.Auth(positionsController.DeletePosition), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("PUT /positions/{id}", middleware.Adapt(auth.Auth(positionsController.UpdatePosition), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("GET /positions", middleware.Adapt(auth.Auth(positionsController.GetAllPositions), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
+	mux.HandleFunc("GET /positions/{id}", LogCorrelationIDTimer(positionsController.GetPosition, config.JWTTokenSecret))
+	mux.HandleFunc("POST /positions", LogCorrelationIDTimer(positionsController.CreatePosition, config.JWTTokenSecret))
+	mux.HandleFunc("DELETE /positions/{id}", LogCorrelationIDTimer(positionsController.DeletePosition, config.JWTTokenSecret))
+	mux.HandleFunc("PUT /positions/{id}", LogCorrelationIDTimer(positionsController.UpdatePosition, config.JWTTokenSecret))
+	mux.HandleFunc("GET /positions", LogCorrelationIDTimer(positionsController.GetAllPositions, config.JWTTokenSecret))
 
-	mux.HandleFunc("GET /employees/{id}", middleware.Adapt(auth.Auth(employeesController.GetEmployee), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("POST /employees", middleware.Adapt(auth.Auth(employeesController.CreateEmployee), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("DELETE /employees/{id}", middleware.Adapt(auth.Auth(employeesController.DeleteEmployee), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("PUT /employees/{id}", middleware.Adapt(auth.Auth(employeesController.UpdateEmployee), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
-	mux.HandleFunc("GET /employees", middleware.Adapt(auth.Auth(employeesController.GetAllEmployees), middleware.Logger(), middleware.Timer(), middleware.CorrelationIDMiddleware()))
+	mux.HandleFunc("GET /employees/{id}", LogCorrelationIDTimer(employeesController.GetEmployee, config.JWTTokenSecret))
+	mux.HandleFunc("POST /employees", LogCorrelationIDTimer(employeesController.CreateEmployee, config.JWTTokenSecret))
+	mux.HandleFunc("DELETE /employees/{id}", LogCorrelationIDTimer(employeesController.DeleteEmployee, config.JWTTokenSecret))
+	mux.HandleFunc("PUT /employees/{id}", LogCorrelationIDTimer(employeesController.UpdateEmployee, config.JWTTokenSecret))
+	mux.HandleFunc("GET /employees", LogCorrelationIDTimer(employeesController.GetAllEmployees, config.JWTTokenSecret))
+}
+
+func LogCorrelationIDTimer(endpoint http.HandlerFunc, JWTTokenSecret string) http.HandlerFunc {
+	auth := middleware.NewJWTAuth(JWTTokenSecret)
+	middlewares := []middleware.Middleware{
+		auth.Auth(),
+		middleware.Logger(),
+		middleware.Timer(),
+		middleware.CorrelationIDMiddleware(),
+	}
+
+	return middleware.Chain(endpoint, middlewares...)
 }

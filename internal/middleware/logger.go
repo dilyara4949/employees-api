@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func Logger() Adapter {
+func Logger() Middleware {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			id := r.Context().Value(CorrelationID)
