@@ -4,14 +4,12 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	employees_api "github.com/dilyara4949/employees-api"
 )
 
 func Timer() Adapter {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			id := r.Context().Value(employees_api.CorrelationID)
+			id := r.Context().Value(CorrelationID)
 			start := time.Now()
 
 			h.ServeHTTP(w, r)

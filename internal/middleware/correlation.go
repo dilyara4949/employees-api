@@ -4,22 +4,23 @@ import (
 	"context"
 	"net/http"
 
-	employees_api "github.com/dilyara4949/employees-api"
 	"github.com/google/uuid"
 )
+
+const CorrelationID = "X-Correlation-ID"
 
 func CorrelationIDMiddleware() Adapter {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			correlationID := r.Header.Get(employees_api.CorrelationID)
+			correlationID := r.Header.Get(CorrelationID)
 			if correlationID == "" {
 				correlationID = uuid.New().String()
 			}
 
-			ctx := context.WithValue(r.Context(), employees_api.CorrelationID, correlationID)
+			ctx := context.WithValue(r.Context(), CorrelationID, correlationID)
 			r = r.WithContext(ctx)
 
-			w.Header().Set(employees_api.CorrelationID, correlationID)
+			w.Header().Set(CorrelationID, correlationID)
 
 			h.ServeHTTP(w, r)
 		}
