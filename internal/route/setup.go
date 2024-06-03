@@ -8,7 +8,7 @@ import (
 	"github.com/dilyara4949/employees-api/internal/middleware"
 )
 
-func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, config *config.Config, mux *http.ServeMux) {
+func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, config config.Config, mux *http.ServeMux) {
 
 	auth := middleware.NewJWTAuth(config.JWTTokenSecret)
 

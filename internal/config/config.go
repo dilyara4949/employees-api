@@ -8,9 +8,9 @@ type Config struct {
 	JWTTokenSecret string
 }
 
-func NewConfig() *Config {
+func NewConfig() Config {
 	config := Config{}
 
 	config.JWTTokenSecret = os.Getenv("JWTTokenSecret")
-	return &config
+	return config
 }
