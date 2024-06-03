@@ -1,16 +1,16 @@
 package route
 
 import (
+	"github.com/dilyara4949/employees-api/internal/config"
 	"net/http"
 
-	"github.com/dilyara4949/employees-api/internal"
 	"github.com/dilyara4949/employees-api/internal/controller"
 	"github.com/dilyara4949/employees-api/internal/middleware"
 )
 
-func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, env *internal.Env, mux *http.ServeMux) {
+func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, config *config.Config, mux *http.ServeMux) {
 
-	auth := middleware.NewJWTAuth(env.JWTTokenSecret)
+	auth := middleware.NewJWTAuth(config.JWTTokenSecret)
 
 	mux.HandleFunc("GET /positions/{id}", auth.Auth(positionsController.GetPosition))
 	mux.HandleFunc("POST /positions", auth.Auth(positionsController.CreatePosition))
