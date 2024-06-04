@@ -3,12 +3,13 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type posRepoMock struct {
@@ -35,8 +36,11 @@ func (p posRepoMock) Get(id string) (*domain.Position, error) {
 }
 
 func (p posRepoMock) Update(position domain.Position) error {
-	//TODO implement me
-	panic("implement me")
+	if position.ID == "err" {
+		return errors.New("Nope")
+	}
+
+	return nil
 }
 
 func (p posRepoMock) Delete(id string) error {
@@ -47,8 +51,13 @@ func (p posRepoMock) Delete(id string) error {
 }
 
 func (p posRepoMock) GetAll() []domain.Position {
-	//TODO implement me
-	panic("implement me")
+	return []domain.Position{
+		{
+			ID:     "id",
+			Name:   "name",
+			Salary: 100,
+		},
+	}
 }
 
 func TestPositionsController_GetPosition(t *testing.T) {
@@ -71,7 +80,7 @@ func TestPositionsController_GetPosition(t *testing.T) {
 		},
 		"err": {
 			id:       "err",
-			expected: "internal server error: Correlation id set incorrect\nerror getting position\n",
+			expected: "error getting position\n",
 		},
 	}
 	for name, tt := range tests {
@@ -189,6 +198,103 @@ func TestPositionsController_DeletePosition(t *testing.T) {
 			if resp.StatusCode != tt.expectedCode {
 				t.Fatalf(`expected "%d", got "%d"`, tt.expectedCode, resp.StatusCode)
 			}
+
+			response, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if res := string(response); res != tt.expected {
+				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
+			}
+		})
+	}
+}
+
+func TestPositionsController_UpdatePosition(t *testing.T) {
+	repo := posRepoMock{}
+	h := NewPositionsController(repo)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("PUT /{id}", h.UpdatePosition)
+
+	svr := httptest.NewServer(mux)
+	defer svr.Close()
+
+	tests := map[string]struct {
+		id       string
+		body     string
+		expected string
+	}{
+		"OK": {
+			id:       "1",
+			body:     "{\"id\":\"1\",\"name\":\"updated name\",\"salary\":200}",
+			expected: "{\"id\":\"1\",\"name\":\"updated name\",\"salary\":200}",
+		},
+		"Empty body": {
+			id:       "1",
+			body:     "",
+			expected: "invalid request body\n",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			req, err := http.NewRequest("PUT", fmt.Sprintf("%s/%s", svr.URL, tt.id), strings.NewReader(tt.body))
+			if err != nil {
+				t.Fatalf("Error while making request: %s", err)
+			}
+
+			cl := http.Client{}
+			resp, err := cl.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			response, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fmt.Println(string(response), tt.expected)
+			if res := string(response); res != tt.expected {
+				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
+			}
+		})
+	}
+}
+
+func TestPositionsController_GetAllPositions(t *testing.T) {
+	repo := posRepoMock{}
+	h := NewPositionsController(repo)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /", h.GetAllPositions)
+
+	svr := httptest.NewServer(mux)
+	defer svr.Close()
+
+	tests := map[string]struct {
+		expected string
+	}{
+		"OK": {
+			expected: "[{\"id\":\"id\",\"name\":\"name\",\"salary\":100}]",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			req, err := http.NewRequest("GET", svr.URL, http.NoBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			cl := http.Client{}
+			resp, err := cl.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)
 			if err != nil {
