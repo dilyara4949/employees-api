@@ -8,6 +8,7 @@ import (
 type Config struct {
 	JWTTokenSecret string
 	Port           string
+	Address        string
 }
 
 func NewConfig() (Config, error) {
@@ -21,6 +22,11 @@ func NewConfig() (Config, error) {
 	config.Port = os.Getenv("PORT")
 	if config.Port == "" {
 		return Config{}, errors.New("PORT is empty")
+	}
+
+	config.Address = os.Getenv("ADDRESS")
+	if config.Address == "" {
+		return Config{}, errors.New("ADDRESS is empty")
 	}
 	return config, nil
 }
