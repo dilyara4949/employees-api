@@ -10,6 +10,10 @@ func Timer() Middleware {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			id := r.Context().Value(CorrelationID)
+			if id == nil {
+				log.Println("Correlation id set incorrect")
+				http.Error(w, "internal server error: Correlation id set incorrect", http.StatusInternalServerError)
+			}
 			start := time.Now()
 
 			h.ServeHTTP(w, r)
