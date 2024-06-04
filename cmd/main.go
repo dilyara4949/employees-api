@@ -28,8 +28,8 @@ func main() {
 
 	route.SetUpRouter(employeeController, positionController, config, mux)
 
-	log.Println("Starting server on :8080")
-	err := http.ListenAndServe(":8080", mux)
+	log.Printf("Starting server on :%s", config.Port)
+	err := http.ListenAndServe(":"+config.Port, mux)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
