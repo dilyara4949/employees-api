@@ -1,16 +1,26 @@
 package config
 
 import (
+	"errors"
 	"os"
 )
 
 type Config struct {
 	JWTTokenSecret string
+	Port           string
 }
 
-func NewConfig() Config {
+func NewConfig() (Config, error) {
 	config := Config{}
 
-	config.JWTTokenSecret = os.Getenv("JWTTokenSecret")
-	return config
+	config.JWTTokenSecret = os.Getenv("JWT_TOKEN_SECRET")
+	if config.JWTTokenSecret == "" {
+		return Config{}, errors.New("JWT_TOKEN_SECRET is empty")
+	}
+
+	config.Port = os.Getenv("PORT")
+	if config.Port == "" {
+		return Config{}, errors.New("PORT is empty")
+	}
+	return config, nil
 }

@@ -45,26 +45,12 @@ func (p posRepoMock) GetAll() []domain.Position {
 }
 
 func TestPositionsController_GetPosition(t *testing.T) {
-
-	//    expected := "dummy data"
-	//    svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	//        fmt.Fprintf(w, expected)
-	//    }))
-	//    defer svr.Close()
-	//    c := NewClient(svr.URL)
-	//    res, err := c.UpperCase("anything")
-	//    if err != nil {
-	//        t.Errorf("expected err to be nil got %v", err)
-	//    }
-	//    // res: expected\r\n
-	//    // due to the http protocol cleanup response
-	//    res = strings.TrimSpace(res)
-	//    if res != expected {
-	//        t.Errorf("expected res to be %s got %s", expected, res)
-	//    }
-
 	repo := posRepoMock{}
-
+	h := NewPositionsController(repo)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{id}", h.GetPosition)
+	svr := httptest.NewServer(mux)
+	defer svr.Close()
 	tests := map[string]struct {
 		id       string
 		expected string
@@ -75,30 +61,22 @@ func TestPositionsController_GetPosition(t *testing.T) {
 		},
 		"err": {
 			id:       "err",
-			expected: "",
+			expected: "internal server error: Correlation id set incorrect\nerror getting position\n",
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-
-			h := NewPositionsController(repo)
-			svr := httptest.NewServer(http.HandlerFunc(h.GetPosition))
-
-			defer svr.Close()
-
 			req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", svr.URL, tt.id), http.NoBody)
-			//req.SetPathValue("id", "err")
-			fmt.Println(req.PathValue("id"))
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			hcl := http.Client{}
 			resp, err := hcl.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}
 			defer resp.Body.Close()
+
 			response, err := io.ReadAll(resp.Body)
 			if strResponse := string(response); strResponse != tt.expected {
 				t.Fatalf(`expected "%s", got "%s"`, tt.expected, strResponse)
