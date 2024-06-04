@@ -24,12 +24,15 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	config := conf.NewConfig()
+	config, err := conf.NewConfig()
+	if err != nil {
+		log.Fatalf("Error while getting config: %s", err)
+	}
 
 	route.SetUpRouter(employeeController, positionController, config, mux)
 
 	log.Printf("Starting server on :%s", config.Port)
-	err := http.ListenAndServe(":"+config.Port, mux)
+	err = http.ListenAndServe(":"+config.Port, mux)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}

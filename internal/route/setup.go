@@ -10,8 +10,6 @@ import (
 
 func SetUpRouter(employeesController *controller.EmployeesController, positionsController *controller.PositionsController, config conf.Config, mux *http.ServeMux) {
 
-	//auth := middleware.NewJWTAuth(config.JWTTokenSecret)
-
 	mux.HandleFunc("GET /positions/{id}", logCorrelationIDTimer(positionsController.GetPosition, config.JWTTokenSecret))
 	mux.HandleFunc("POST /positions", logCorrelationIDTimer(positionsController.CreatePosition, config.JWTTokenSecret))
 	mux.HandleFunc("DELETE /positions/{id}", logCorrelationIDTimer(positionsController.DeletePosition, config.JWTTokenSecret))
