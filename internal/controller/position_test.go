@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -39,8 +40,10 @@ func (p posRepoMock) Update(position domain.Position) error {
 }
 
 func (p posRepoMock) Delete(id string) error {
-	//TODO implement me
-	panic("implement me")
+	if id == "err" {
+		return errors.New("test error")
+	}
+	return nil
 }
 
 func (p posRepoMock) GetAll() []domain.Position {
@@ -97,7 +100,7 @@ func TestPositionsController_CreatePosition(t *testing.T) {
 	h := NewPositionsController(repo)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", h.CreatePosition)
+	mux.HandleFunc("POST /", h.CreatePosition)
 
 	svr := httptest.NewServer(mux)
 	defer svr.Close()
@@ -110,11 +113,15 @@ func TestPositionsController_CreatePosition(t *testing.T) {
 			body:     "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
 			expected: "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
 		},
+		"Empty body": {
+			body:     "",
+			expected: "invalid request body\n",
+		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			req, err := http.NewRequest("POST", svr.URL, http.NoBody)
+			req, err := http.NewRequest("POST", svr.URL, strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
 			}
@@ -136,4 +143,61 @@ func TestPositionsController_CreatePosition(t *testing.T) {
 		})
 	}
 
+}
+
+func TestPositionsController_DeletePosition(t *testing.T) {
+	repo := posRepoMock{}
+	h := NewPositionsController(repo)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("DELETE /{id}", h.DeletePosition)
+
+	svr := httptest.NewServer(mux)
+	defer svr.Close()
+
+	tests := map[string]struct {
+		id           string
+		expected     string
+		expectedCode int
+	}{
+		"OK": {
+			id:           "10",
+			expected:     "",
+			expectedCode: 204,
+		},
+		"err": {
+			id:           "err",
+			expected:     "error deleting position\n",
+			expectedCode: 500,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/%s", svr.URL, tt.id), http.NoBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			cl := http.Client{}
+			resp, err := cl.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != tt.expectedCode {
+				t.Fatalf(`expected "%d", got "%d"`, tt.expectedCode, resp.StatusCode)
+			}
+
+			response, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if res := string(response); res != tt.expected {
+				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
+			}
+		})
+	}
 }
