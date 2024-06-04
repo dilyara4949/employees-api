@@ -14,7 +14,11 @@ type posRepoMock struct {
 }
 
 func (p posRepoMock) Create(position *domain.Position) error {
-	panic("implement me")
+	if position.ID == "err" {
+		return errors.New("Nope")
+	}
+
+	return nil
 }
 
 func (p posRepoMock) Get(id string) (*domain.Position, error) {
@@ -47,10 +51,13 @@ func (p posRepoMock) GetAll() []domain.Position {
 func TestPositionsController_GetPosition(t *testing.T) {
 	repo := posRepoMock{}
 	h := NewPositionsController(repo)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{id}", h.GetPosition)
+
 	svr := httptest.NewServer(mux)
 	defer svr.Close()
+
 	tests := map[string]struct {
 		id       string
 		expected string
@@ -83,4 +90,50 @@ func TestPositionsController_GetPosition(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPositionsController_CreatePosition(t *testing.T) {
+	repo := posRepoMock{}
+	h := NewPositionsController(repo)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /", h.CreatePosition)
+
+	svr := httptest.NewServer(mux)
+	defer svr.Close()
+
+	tests := map[string]struct {
+		body     string
+		expected string
+	}{
+		"OK": {
+			body:     "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
+			expected: "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			req, err := http.NewRequest("POST", svr.URL, http.NoBody)
+			if err != nil {
+				t.Fatalf("Error while making request: %s", err)
+			}
+
+			cl := http.Client{}
+			resp, err := cl.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			response, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if res := string(response); res != tt.expected {
+				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
+			}
+		})
+	}
+
 }
