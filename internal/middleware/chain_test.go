@@ -43,6 +43,31 @@ func TestChain(t *testing.T) {
 			},
 			expected: "1.2.3",
 		},
+		{
+			name: "no middleware",
+			args: args{
+				endpoint: func(writer http.ResponseWriter, request *http.Request) {
+					writer.Write([]byte("hi"))
+				},
+			},
+			expected: "hi",
+		},
+		{
+			name: "dont serve endpoint",
+			args: args{
+				endpoint: func(writer http.ResponseWriter, request *http.Request) {
+					writer.Write([]byte("hi"))
+				},
+				middlewares: []Middleware{
+					func(h http.Handler) http.HandlerFunc {
+						return func(w http.ResponseWriter, r *http.Request) {
+							w.Write([]byte("world"))
+						}
+					},
+				},
+			},
+			expected: "world",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
