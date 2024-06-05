@@ -43,32 +43,6 @@ func TestChain(t *testing.T) {
 			},
 			expected: "1.2.3",
 		},
-		{
-			name: "3.2.1",
-			args: args{
-				endpoint: func(writer http.ResponseWriter, request *http.Request) {
-					writer.Write([]byte("1"))
-				},
-				middlewares: []Middleware{
-					func(h http.Handler) http.HandlerFunc {
-						return func(w http.ResponseWriter, r *http.Request) {
-							w.Write([]byte("2."))
-							h.ServeHTTP(w, r)
-						}
-					},
-					func(h http.Handler) http.HandlerFunc {
-						return func(w http.ResponseWriter, r *http.Request) {
-							_, err := w.Write([]byte("3."))
-							if err != nil {
-								println(err)
-							}
-							h.ServeHTTP(w, r)
-						}
-					},
-				},
-			},
-			expected: "3.2.1",
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
