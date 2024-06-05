@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"log"
 	"net/http"
@@ -32,7 +33,7 @@ func main() {
 	route.SetUpRouter(employeeController, positionController, config, mux)
 
 	log.Printf("Starting server on :%s", config.Port)
-	err = http.ListenAndServe(":"+config.Port, mux)
+	err = http.ListenAndServe(fmt.Sprintf("%s:%s", config.Address, config.Port), mux)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
