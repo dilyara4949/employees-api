@@ -1,6 +1,3 @@
-//go:build all
-// +build all
-
 package middleware
 
 import (

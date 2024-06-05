@@ -1,6 +1,3 @@
-//go:build all
-// +build all
-
 package config
 
 import "testing"
