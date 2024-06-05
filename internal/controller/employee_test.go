@@ -133,6 +133,10 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 			body:     "",
 			expected: "invalid request body\n",
 		},
+		"err": {
+			body:     "{\"id\":\"err\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
+			expected: "error creating employee\n",
+		},
 	}
 
 	for name, tt := range tests {
@@ -241,6 +245,11 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 			id:       "id",
 			body:     "",
 			expected: "invalid request body\n",
+		},
+		"err": {
+			id:       "err",
+			body:     "{\"id\":\"err\",\"firstname\":\"updated first name\",\"lastname\":\"updated last name\",\"position_id\":\"position id\"}",
+			expected: "error updating employee\n",
 		},
 	}
 
