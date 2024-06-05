@@ -236,6 +236,11 @@ func TestPositionsController_UpdatePosition(t *testing.T) {
 			body:     "",
 			expected: "invalid request body\n",
 		},
+		"err": {
+			id:       "err",
+			body:     "{\"err\":\"1\",\"name\":\"updated name\",\"salary\":200}",
+			expected: "error updating position\n",
+		},
 	}
 
 	for name, tt := range tests {
