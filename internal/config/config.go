@@ -11,22 +11,28 @@ type Config struct {
 	Address        string
 }
 
+var (
+	errMissingPort           = errors.New("PORT is empty")
+	errMissingAddress        = errors.New("ADDRESS is empty")
+	errMissingJWTTokenSecret = errors.New("JWT_TOKEN_SECRET is empty")
+)
+
 func NewConfig() (Config, error) {
 	config := Config{}
 
 	config.Address = os.Getenv("ADDRESS")
 	if config.Address == "" {
-		return Config{}, errors.New("ADDRESS is empty")
+		return Config{}, errMissingAddress
 	}
 
 	config.Port = os.Getenv("PORT")
 	if config.Port == "" {
-		return Config{}, errors.New("PORT is empty")
+		return Config{}, errMissingPort
 	}
 
 	config.JWTTokenSecret = os.Getenv("JWT_TOKEN_SECRET")
 	if config.JWTTokenSecret == "" {
-		return Config{}, errors.New("JWT_TOKEN_SECRET is empty")
+		return Config{}, errMissingJWTTokenSecret
 	}
 	return config, nil
 }

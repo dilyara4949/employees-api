@@ -1,8 +1,8 @@
 package config
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestNewConfig(t *testing.T) {
 		name    string
 		input   map[string]string
 		want    Config
-		wantErr bool
+		wantErr error
 	}{
 		{
 			name: "OK",
@@ -32,37 +32,34 @@ func TestNewConfig(t *testing.T) {
 			input: map[string]string{
 				"ADDRESS":          "address",
 				"JWT_TOKEN_SECRET": "secret",
-				"PORT":             "",
 			},
-			wantErr: true,
+			wantErr: errMissingPort,
 		},
 		{
 			name: "empty address",
 			input: map[string]string{
-				"PORT":    "port",
-				"":        "secret",
-				"ADDRESS": "",
+				"PORT":             "port",
+				"JWT_TOKEN_SECRET": "secret",
 			},
-			wantErr: true,
+			wantErr: errMissingAddress,
 		},
 		{
 			name: "empty jwt secret",
 			input: map[string]string{
-				"ADDRESS":          "address",
-				"PORT":             "port",
-				"JWT_TOKEN_SECRET": "",
+				"ADDRESS": "address",
+				"PORT":    "port",
 			},
-			wantErr: true,
+			wantErr: errMissingJWTTokenSecret,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for confName, confValue := range tt.input {
-				os.Setenv(confName, confValue)
+				t.Setenv(confName, confValue)
 			}
 			got, err := NewConfig()
 			fmt.Println(err, tt.wantErr)
-			if (err != nil) != tt.wantErr {
+			if (tt.wantErr != nil) && !errors.Is(err, tt.wantErr) {
 				t.Errorf("NewConfig() error: %v, wantErr: %v", err, tt.wantErr)
 				return
 			}
