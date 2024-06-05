@@ -32,22 +32,25 @@ func TestNewConfig(t *testing.T) {
 			input: map[string]string{
 				"ADDRESS":          "address",
 				"JWT_TOKEN_SECRET": "secret",
+				"PORT":             "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty address",
 			input: map[string]string{
-				"PORT":             "port",
-				"JWT_TOKEN_SECRET": "secret",
+				"PORT":    "port",
+				"":        "secret",
+				"ADDRESS": "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "empty jwt secret",
 			input: map[string]string{
-				"ADDRESS": "address",
-				"PORT":    "port",
+				"ADDRESS":          "address",
+				"PORT":             "port",
+				"JWT_TOKEN_SECRET": "",
 			},
 			wantErr: true,
 		},
