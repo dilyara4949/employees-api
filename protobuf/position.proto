@@ -1,0 +1,19 @@
+syntax = "proto3";
+package employees_api.position;
+option go_package = "github.com/dilyara4949/employees-api/protobuf/position";
+
+import "employee.proto";
+
+service PositionService {
+  rpc Get(employee.Id) returns (Position);
+  rpc GetAll(employee.Empty) returns (stream Position);
+  rpc Create(Position) returns (Position);
+  rpc Update(Position) returns (Position);
+  rpc Delete(employee.Id) returns (employee.Status);
+}
+
+message Position {
+  string id = 1;
+  string name = 2;
+  int32 salary = 3;
+}
