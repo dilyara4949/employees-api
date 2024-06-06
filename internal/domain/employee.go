@@ -12,5 +12,5 @@ type EmployeesRepository interface {
 	Get(id string) (*Employee, error)
 	Update(Employee) error
 	Delete(id string) error
-	GetAll() []Employee
+	GetAll() ([]Employee, error)
 }

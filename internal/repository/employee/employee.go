@@ -48,6 +48,6 @@ func (e *employeeRepository) Delete(id string) error {
 	return e.employeesStorage.Delete(id)
 }
 
-func (e *employeeRepository) GetAll() []domain.Employee {
+func (e *employeeRepository) GetAll() ([]domain.Employee, error) {
 	return e.employeesStorage.All()
 }

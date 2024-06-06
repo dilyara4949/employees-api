@@ -52,7 +52,7 @@ func (e empRepoMock) Delete(id string) error {
 	return nil
 }
 
-func (e empRepoMock) GetAll() []domain.Employee {
+func (e empRepoMock) GetAll() ([]domain.Employee, error) {
 	return []domain.Employee{
 		{
 			ID:         "id",
@@ -60,7 +60,7 @@ func (e empRepoMock) GetAll() []domain.Employee {
 			LastName:   "last name",
 			PositionID: "position id",
 		},
-	}
+	}, nil
 }
 
 func TestEmployeesController_GetEmployee(t *testing.T) {

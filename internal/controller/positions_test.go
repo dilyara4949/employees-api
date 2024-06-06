@@ -50,14 +50,15 @@ func (p posRepoMock) Delete(id string) error {
 	return nil
 }
 
-func (p posRepoMock) GetAll() []domain.Position {
+func (p posRepoMock) GetAll() ([]domain.Position, error) {
+
 	return []domain.Position{
 		{
 			ID:     "id",
 			Name:   "name",
 			Salary: 100,
 		},
-	}
+	}, nil
 }
 
 func TestPositionsController_GetPosition(t *testing.T) {
@@ -125,6 +126,10 @@ func TestPositionsController_CreatePosition(t *testing.T) {
 		"Empty body": {
 			body:     "",
 			expected: "invalid request body\n",
+		},
+		"err": {
+			body:     "{\"id\":\"err\",\"name\":\"name\",\"salary\":100}",
+			expected: "error creating position\n",
 		},
 	}
 

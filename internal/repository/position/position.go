@@ -33,6 +33,6 @@ func (p *positionsRepository) Delete(id string) error {
 	return p.positionsStorage.Delete(id)
 }
 
-func (p *positionsRepository) GetAll() []domain.Position {
+func (p *positionsRepository) GetAll() ([]domain.Position, error) {
 	return p.positionsStorage.All()
 }
