@@ -3,16 +3,17 @@ package main
 import (
 	"context"
 	"errors"
+	//"github.com/dilyara4949/employees-api/protobuf/position"
 	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/dilyara4949/employees-api/protobuf/proto"
+	employee "github.com/dilyara4949/employees-api/protobuf"
 )
 
 type PositionServer struct {
 	Repo domain.PositionsRepository
-	proto.UnimplementedPositionServiceServer
+	employee.UnimplementedPositionServiceServer
 }
 
-func (s *PositionServer) GetAll(empty *proto.Empty, stream proto.PositionService_GetAllServer) error {
+func (s *PositionServer) GetAll(empty *employee.Empty, stream employee.PositionService_GetAllServer) error {
 	positions := s.Repo.GetAll()
 	for _, pos := range positions {
 		if err := stream.Send(positionToProto(&pos)); err != nil {
@@ -28,7 +29,7 @@ func NewPositionServer(repo domain.PositionsRepository) *PositionServer {
 	}
 }
 
-func (s *PositionServer) Get(_ context.Context, id *proto.Id) (*proto.Position, error) {
+func (s *PositionServer) Get(_ context.Context, id *employee.Id) (*employee.Position, error) {
 	if id == nil {
 		return nil, errors.New("got nil id in get position")
 	}
@@ -40,7 +41,7 @@ func (s *PositionServer) Get(_ context.Context, id *proto.Id) (*proto.Position, 
 	return positionToProto(position), nil
 }
 
-func (s *PositionServer) Create(_ context.Context, pos *proto.Position) (*proto.Position, error) {
+func (s *PositionServer) Create(_ context.Context, pos *employee.Position) (*employee.Position, error) {
 	if pos == nil {
 		return nil, errors.New("got nil position in create position")
 	}
@@ -53,7 +54,7 @@ func (s *PositionServer) Create(_ context.Context, pos *proto.Position) (*proto.
 	return positionToProto(position), nil
 }
 
-func (s *PositionServer) Update(_ context.Context, pos *proto.Position) (*proto.Position, error) {
+func (s *PositionServer) Update(_ context.Context, pos *employee.Position) (*employee.Position, error) {
 	if pos == nil {
 		return nil, errors.New("got nil position in update position")
 	}
@@ -66,7 +67,7 @@ func (s *PositionServer) Update(_ context.Context, pos *proto.Position) (*proto.
 	return pos, nil
 }
 
-func (s *PositionServer) Delete(_ context.Context, id *proto.Id) (*proto.Status, error) {
+func (s *PositionServer) Delete(_ context.Context, id *employee.Id) (*employee.Status, error) {
 	if id == nil {
 		return nil, errors.New("got nil id in delete positions")
 	}
@@ -75,19 +76,19 @@ func (s *PositionServer) Delete(_ context.Context, id *proto.Id) (*proto.Status,
 	if err != nil {
 		return nil, err
 	}
-	return &proto.Status{Status: 204}, nil
+	return &employee.Status{Status: 204}, nil
 }
 
-func positionToProto(p *domain.Position) *proto.Position {
+func positionToProto(p *domain.Position) *employee.Position {
 	if p == nil {
 		return nil
 	}
-	return &proto.Position{
+	return &employee.Position{
 		Id: p.ID, Name: p.Name, Salary: int32(p.Salary),
 	}
 }
 
-func protoToPosition(p *proto.Position) *domain.Position {
+func protoToPosition(p *employee.Position) *domain.Position {
 	if p == nil {
 		return nil
 	}
