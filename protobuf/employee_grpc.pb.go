@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: protobuf/employee.proto
+// source: employee.proto
 
-package employee
+package proto
 
 import (
 	context "context"
@@ -273,5 +273,5 @@ var EmployeeService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "protobuf/employee.proto",
+	Metadata: "employee.proto",
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 package employees_api.position;
-option go_package = "github.com/dilyara4949/employees-api/protobuf/position";
+option go_package = "github.com/dilyara4949/employees-api/protobuf/proto";
 
 import "employee.proto";
 

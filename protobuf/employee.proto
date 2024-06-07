@@ -1,6 +1,6 @@
 syntax = "proto3";
 package employees_api.employee;
-option go_package = "github.com/dilyara4949/employees-api/protobuf/employee";
+option go_package = "github.com/dilyara4949/employees-api/protobuf/proto";
 
 service EmployeeService {
   rpc Get(Id) returns (Employee);
@@ -23,6 +23,6 @@ message Status {
 message Employee {
   string id = 1;
   string firstname = 2;
-  int32 lastname = 3;
+  string lastname = 3;
   string position_id = 4;
 }
