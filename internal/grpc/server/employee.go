@@ -1,11 +1,10 @@
-package main
+package server
 
 import (
 	"context"
 	"errors"
-
 	"github.com/dilyara4949/employees-api/internal/domain"
-	pb "github.com/dilyara4949/employees-api/protobuf"
+	pb "github.com/dilyara4949/employees-api/proto"
 )
 
 type EmployeeServer struct {
@@ -29,7 +28,7 @@ func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
 	}
 }
 
-func (s *EmployeeServer) Get(_ context.Context, id *pb.Id) (*pb.Employee, error) {
+func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, error) {
 	if id == nil {
 		return nil, errors.New("got nil id in get employee")
 	}

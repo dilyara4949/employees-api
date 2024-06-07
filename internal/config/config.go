@@ -7,7 +7,8 @@ import (
 
 type Config struct {
 	JWTTokenSecret string
-	Port           string
+	RestPort       string
+	GrpcPort       string
 	Address        string
 }
 
@@ -19,9 +20,14 @@ func NewConfig() (Config, error) {
 		return Config{}, errors.New("JWT_TOKEN_SECRET is empty")
 	}
 
-	config.Port = os.Getenv("PORT")
-	if config.Port == "" {
-		return Config{}, errors.New("PORT is empty")
+	config.RestPort = os.Getenv("REST_PORT")
+	if config.RestPort == "" {
+		return Config{}, errors.New("REST_PORT is empty")
+	}
+
+	config.GrpcPort = os.Getenv("GRPC_PORT")
+	if config.GrpcPort == "" {
+		return Config{}, errors.New("GRPC_PORT is empty")
 	}
 
 	config.Address = os.Getenv("ADDRESS")

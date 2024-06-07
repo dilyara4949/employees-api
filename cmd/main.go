@@ -32,8 +32,8 @@ func main() {
 
 	route.SetUpRouter(employeeController, positionController, config, mux)
 
-	log.Printf("Starting server on :%s", config.Port)
-	err = http.ListenAndServe(fmt.Sprintf("%s:%s", config.Address, config.Port), mux)
+	log.Printf("Starting server on :%s", config.RestPort)
+	err = http.ListenAndServe(fmt.Sprintf("%s:%s", config.Address, config.RestPort), mux)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}

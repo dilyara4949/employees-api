@@ -1,15 +1,15 @@
 syntax = "proto3";
-package employees_api.position;
+package employees_api.proto;
 option go_package = "./proto;proto";
 
 import "employee.proto";
 
 service PositionService {
-  rpc Get(employee.Id) returns (Position);
-  rpc GetAll(employee.Empty) returns (stream Position);
+  rpc Get(proto.Id) returns (Position);
+  rpc GetAll(proto.Empty) returns (stream Position);
   rpc Create(Position) returns (Position);
   rpc Update(Position) returns (Position);
-  rpc Delete(employee.Id) returns (employee.Status);
+  rpc Delete(proto.Id) returns (proto.Status);
 }
 
 message Position {
