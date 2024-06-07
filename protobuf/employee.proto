@@ -1,6 +1,6 @@
 syntax = "proto3";
 package employees_api.employee;
-option go_package = "github.com/dilyara4949/employees-api/protobuf/proto";
+option go_package = "./proto;proto";
 
 service EmployeeService {
   rpc Get(Id) returns (Employee);
