@@ -1,5 +1,7 @@
 package domain
 
+import "context"
+
 type Position struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
@@ -7,9 +9,9 @@ type Position struct {
 }
 
 type PositionsRepository interface {
-	Create(*Position) error
-	Get(id string) (*Position, error)
-	Update(Position) error
-	Delete(id string) error
-	GetAll() []Position
+	Create(ctx context.Context, pos *Position) error
+	Get(ctx context.Context, id string) (*Position, error)
+	Update(ctx context.Context, pos Position) error
+	Delete(ctx context.Context, id string) error
+	GetAll(ctx context.Context) []Position
 }

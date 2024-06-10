@@ -13,7 +13,7 @@ type EmployeeServer struct {
 }
 
 func (s *EmployeeServer) GetAll(empty *pb.Empty, stream pb.EmployeeService_GetAllServer) error {
-	employees := s.Repo.GetAll()
+	employees := s.Repo.GetAll(context.Background())
 	for _, emp := range employees {
 		if err := stream.Send(employeeToProto(&emp)); err != nil {
 			return err
@@ -33,7 +33,7 @@ func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, erro
 		return nil, errors.New("got nil id in get employee")
 	}
 
-	employee, err := s.Repo.Get(id.Value)
+	employee, err := s.Repo.Get(context.Background(), id.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (s *EmployeeServer) Create(_ context.Context, emp *pb.Employee) (*pb.Employ
 	}
 
 	employee := protoToEmployee(emp)
-	err := s.Repo.Create(employee)
+	err := s.Repo.Create(context.Background(), employee)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (s *EmployeeServer) Update(_ context.Context, emp *pb.Employee) (*pb.Employ
 	}
 
 	employee := protoToEmployee(emp)
-	err := s.Repo.Update(*employee)
+	err := s.Repo.Update(context.Background(), *employee)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (s *EmployeeServer) Delete(_ context.Context, id *pb.Id) (*pb.Status, error
 		return nil, errors.New("got nil id in delete employees")
 	}
 
-	err := s.Repo.Delete(id.Value)
+	err := s.Repo.Delete(context.Background(), id.Value)
 	if err != nil {
 		return nil, err
 	}

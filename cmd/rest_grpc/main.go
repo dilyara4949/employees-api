@@ -7,7 +7,6 @@ import (
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
 	"github.com/dilyara4949/employees-api/internal/repository/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/position"
-	"github.com/dilyara4949/employees-api/internal/repository/storage"
 	"github.com/dilyara4949/employees-api/internal/route"
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
@@ -18,11 +17,11 @@ import (
 )
 
 func main() {
-	positionsStorage := storage.NewPositionsStorage()
-	employeeStorage := storage.NewEmployeesStorage()
+	positionsStorage := position.NewPositionsStorage()
+	employeeStorage := employee.NewEmployeesStorage()
 
-	employeeRepo := employee.NewEmployeesRepository(employeeStorage, positionsStorage)
 	positionRepo := position.NewPositionsRepository(positionsStorage)
+	employeeRepo := employee.NewEmployeesRepository(employeeStorage, positionRepo)
 
 	config, err := conf.NewConfig()
 	if err != nil {

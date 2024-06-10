@@ -13,7 +13,7 @@ type PositionServer struct {
 }
 
 func (s *PositionServer) GetAll(empty *pb.Empty, stream pb.PositionService_GetAllServer) error {
-	positions := s.Repo.GetAll()
+	positions := s.Repo.GetAll(context.Background())
 	for _, pos := range positions {
 		if err := stream.Send(positionToProto(&pos)); err != nil {
 			return err
@@ -33,7 +33,7 @@ func (s *PositionServer) Get(_ context.Context, id *pb.Id) (*pb.Position, error)
 		return nil, errors.New("got nil id in get position")
 	}
 
-	position, err := s.Repo.Get(id.Value)
+	position, err := s.Repo.Get(context.Background(), id.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Posi
 	}
 
 	position := protoToPosition(pos)
-	err := s.Repo.Create(position)
+	err := s.Repo.Create(context.Background(), position)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (s *PositionServer) Update(_ context.Context, pos *pb.Position) (*pb.Positi
 	}
 
 	position := protoToPosition(pos)
-	err := s.Repo.Update(*position)
+	err := s.Repo.Update(context.Background(), *position)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (s *PositionServer) Delete(_ context.Context, id *pb.Id) (*pb.Status, error
 		return nil, errors.New("got nil id in delete positions")
 	}
 
-	err := s.Repo.Delete(id.Value)
+	err := s.Repo.Delete(context.Background(), id.Value)
 	if err != nil {
 		return nil, err
 	}

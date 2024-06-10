@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
@@ -22,7 +23,7 @@ func (c *EmployeesController) GetEmployee(w http.ResponseWriter, r *http.Request
 	}
 
 	employeeID := r.PathValue("id")
-	employee, err := c.Repo.Get(employeeID)
+	employee, err := c.Repo.Get(context.Background(), employeeID)
 
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error getting employee", Status: http.StatusInternalServerError, Cause: err})
@@ -58,7 +59,7 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err = c.Repo.Create(&employee); err != nil {
+	if err = c.Repo.Create(context.Background(), &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating employee", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -81,7 +82,7 @@ func (c *EmployeesController) DeleteEmployee(w http.ResponseWriter, r *http.Requ
 	}
 
 	employeeID := r.PathValue("id")
-	err := c.Repo.Delete(employeeID)
+	err := c.Repo.Delete(context.Background(), employeeID)
 
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error deleting employee", Status: http.StatusInternalServerError, Cause: err})
@@ -116,7 +117,7 @@ func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Requ
 	}
 
 	employee.ID = employeeID
-	if err := c.Repo.Update(employee); err != nil {
+	if err := c.Repo.Update(context.Background(), employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error updating employee", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -138,7 +139,7 @@ func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	employees := e.Repo.GetAll()
+	employees := e.Repo.GetAll(context.Background())
 
 	response, err := json.Marshal(employees)
 	if err != nil {

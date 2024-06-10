@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
@@ -22,7 +23,7 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 	}
 
 	positionID := r.PathValue("id")
-	position, err := c.Repo.Get(positionID)
+	position, err := c.Repo.Get(context.Background(), positionID)
 
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})
@@ -58,7 +59,7 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if err = c.Repo.Create(&position); err != nil {
+	if err = c.Repo.Create(context.Background(), &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -81,7 +82,7 @@ func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Requ
 	}
 
 	positionID := r.PathValue("id")
-	err := c.Repo.Delete(positionID)
+	err := c.Repo.Delete(context.Background(), positionID)
 
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error deleting position", Status: http.StatusInternalServerError, Cause: err})
@@ -116,7 +117,7 @@ func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Requ
 	}
 
 	position.ID = positionID
-	if err := c.Repo.Update(position); err != nil {
+	if err := c.Repo.Update(context.Background(), position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error updating position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -138,7 +139,7 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	positions := c.Repo.GetAll()
+	positions := c.Repo.GetAll(context.Background())
 
 	response, err := json.Marshal(positions)
 	if err != nil {
