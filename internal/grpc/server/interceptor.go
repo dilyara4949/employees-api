@@ -20,6 +20,17 @@ func LoggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 	return h, err
 }
 
+func StreamLoggingInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	start := time.Now()
+	correlationID := getCorrelationIDFromStream(ss)
+
+	err := handler(srv, ss)
+
+	log.Printf("Method: %s, CorrelationID: %s, Duration: %s, Error: %v", info.FullMethod, correlationID, time.Since(start), err)
+
+	return err
+}
+
 func CorrelationIDInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		correlationID := getCorrelationIDFromContext(ctx)
@@ -35,4 +46,15 @@ func getCorrelationIDFromContext(ctx context.Context) string {
 		}
 	}
 	return uuid.New().String()
+}
+
+func getCorrelationIDFromStream(ss grpc.ServerStream) string {
+	md, ok := metadata.FromIncomingContext(ss.Context())
+	if !ok {
+		return ""
+	}
+	if values := md["correlation_id"]; len(values) > 0 {
+		return values[0]
+	}
+	return ""
 }
