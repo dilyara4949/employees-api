@@ -28,12 +28,12 @@ func NewPositionServer(repo domain.PositionsRepository) *PositionServer {
 	}
 }
 
-func (s *PositionServer) Get(_ context.Context, id *pb.Id) (*pb.Position, error) {
+func (s *PositionServer) Get(ctx context.Context, id *pb.Id) (*pb.Position, error) {
 	if id == nil {
 		return nil, errors.New("got nil id in get position")
 	}
 
-	position, err := s.Repo.Get(context.Background(), id.Value)
+	position, err := s.Repo.Get(ctx, id.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -46,32 +46,32 @@ func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Posi
 	}
 
 	position := protoToPosition(pos)
-	err := s.Repo.Create(context.Background(), position)
+	err := s.Repo.Create(ctx, position)
 	if err != nil {
 		return nil, err
 	}
 	return positionToProto(position), nil
 }
 
-func (s *PositionServer) Update(_ context.Context, pos *pb.Position) (*pb.Position, error) {
+func (s *PositionServer) Update(ctx context.Context, pos *pb.Position) (*pb.Position, error) {
 	if pos == nil {
 		return nil, errors.New("got nil position in update position")
 	}
 
 	position := protoToPosition(pos)
-	err := s.Repo.Update(context.Background(), *position)
+	err := s.Repo.Update(ctx, *position)
 	if err != nil {
 		return nil, err
 	}
 	return pos, nil
 }
 
-func (s *PositionServer) Delete(_ context.Context, id *pb.Id) (*pb.Status, error) {
+func (s *PositionServer) Delete(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	if id == nil {
 		return nil, errors.New("got nil id in delete positions")
 	}
 
-	err := s.Repo.Delete(context.Background(), id.Value)
+	err := s.Repo.Delete(ctx, id.Value)
 	if err != nil {
 		return nil, err
 	}

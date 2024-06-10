@@ -33,45 +33,45 @@ func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, erro
 		return nil, errors.New("got nil id in get employee")
 	}
 
-	employee, err := s.Repo.Get(context.Background(), id.Value)
+	employee, err := s.Repo.Get(ctx, id.Value)
 	if err != nil {
 		return nil, err
 	}
 	return employeeToProto(employee), nil
 }
 
-func (s *EmployeeServer) Create(_ context.Context, emp *pb.Employee) (*pb.Employee, error) {
+func (s *EmployeeServer) Create(ctx context.Context, emp *pb.Employee) (*pb.Employee, error) {
 	if emp == nil {
 		return nil, errors.New("got nil employee in create employee")
 	}
 
 	employee := protoToEmployee(emp)
-	err := s.Repo.Create(context.Background(), employee)
+	err := s.Repo.Create(ctx, employee)
 	if err != nil {
 		return nil, err
 	}
 	return employeeToProto(employee), nil
 }
 
-func (s *EmployeeServer) Update(_ context.Context, emp *pb.Employee) (*pb.Employee, error) {
+func (s *EmployeeServer) Update(ctx context.Context, emp *pb.Employee) (*pb.Employee, error) {
 	if emp == nil {
 		return nil, errors.New("got nil employee in update employee")
 	}
 
 	employee := protoToEmployee(emp)
-	err := s.Repo.Update(context.Background(), *employee)
+	err := s.Repo.Update(ctx, *employee)
 	if err != nil {
 		return nil, err
 	}
 	return emp, nil
 }
 
-func (s *EmployeeServer) Delete(_ context.Context, id *pb.Id) (*pb.Status, error) {
+func (s *EmployeeServer) Delete(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	if id == nil {
 		return nil, errors.New("got nil id in delete employees")
 	}
 
-	err := s.Repo.Delete(context.Background(), id.Value)
+	err := s.Repo.Delete(ctx, id.Value)
 	if err != nil {
 		return nil, err
 	}
