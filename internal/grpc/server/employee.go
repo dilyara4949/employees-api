@@ -2,15 +2,22 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/dilyara4949/employees-api/internal/domain"
 	pb "github.com/dilyara4949/employees-api/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type EmployeeServer struct {
 	Repo domain.EmployeesRepository
 	pb.UnimplementedEmployeeServiceServer
+}
+
+func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
+	return &EmployeeServer{
+		Repo: repo,
+	}
 }
 
 func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.EmployeesList, error) {
@@ -23,62 +30,56 @@ func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.Emplo
 	return &pb.EmployeesList{Employee: employeeProtos}, nil
 }
 
-func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
-	return &EmployeeServer{
-		Repo: repo,
-	}
-}
-
 func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, error) {
 	if id == nil {
-		return nil, errors.New("got nil id in get employee")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil id in get employee")
 	}
 
 	employee, err := s.Repo.Get(ctx, id.Value)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return employeeToProto(employee), nil
 }
 
 func (s *EmployeeServer) Create(ctx context.Context, emp *pb.Employee) (*pb.Employee, error) {
 	if emp == nil {
-		return nil, errors.New("got nil employee in create employee")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil employee in create employee")
 	}
 
 	employee := protoToEmployee(emp)
 
 	err := s.Repo.Create(ctx, employee)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return employeeToProto(employee), nil
 }
 
 func (s *EmployeeServer) Update(ctx context.Context, emp *pb.Employee) (*pb.Employee, error) {
 	if emp == nil {
-		return nil, errors.New("got nil employee in update employee")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil employee in update employee")
 	}
 
 	employee := protoToEmployee(emp)
 
 	err := s.Repo.Update(ctx, *employee)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return emp, nil
 }
 
 func (s *EmployeeServer) Delete(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	if id == nil {
-		return nil, errors.New("got nil id in delete employees")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil id in delete employees")
 	}
 
 	err := s.Repo.Delete(ctx, id.Value)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
-	return &pb.Status{Status: 204}, nil
+	return &pb.Status{Status: 0}, nil
 }
 
 func employeeToProto(e *domain.Employee) *pb.Employee {

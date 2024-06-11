@@ -2,10 +2,11 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/dilyara4949/employees-api/internal/domain"
 	pb "github.com/dilyara4949/employees-api/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type PositionServer struct {
@@ -31,54 +32,54 @@ func NewPositionServer(repo domain.PositionsRepository) *PositionServer {
 
 func (s *PositionServer) Get(ctx context.Context, id *pb.Id) (*pb.Position, error) {
 	if id == nil {
-		return nil, errors.New("got nil id in get position")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil id in get position")
 	}
 
 	position, err := s.Repo.Get(ctx, id.Value)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "error getting position: %v", err)
 	}
 	return positionToProto(position), nil
 }
 
 func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Position, error) {
 	if pos == nil {
-		return nil, errors.New("got nil position in create position")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil position in create position")
 	}
 
 	position := protoToPosition(pos)
 
 	err := s.Repo.Create(ctx, position)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return positionToProto(position), nil
 }
 
 func (s *PositionServer) Update(ctx context.Context, pos *pb.Position) (*pb.Position, error) {
 	if pos == nil {
-		return nil, errors.New("got nil position in update position")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil position in update position")
 	}
 
 	position := protoToPosition(pos)
 
 	err := s.Repo.Update(ctx, *position)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return pos, nil
 }
 
 func (s *PositionServer) Delete(ctx context.Context, id *pb.Id) (*pb.Status, error) {
 	if id == nil {
-		return nil, errors.New("got nil id in delete positions")
+		return nil, status.Errorf(codes.InvalidArgument, "got nil id in delete positions")
 	}
 
 	err := s.Repo.Delete(ctx, id.Value)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
-	return &pb.Status{Status: 204}, nil
+	return &pb.Status{Status: 0}, nil
 }
 
 func positionToProto(p *domain.Position) *pb.Position {
