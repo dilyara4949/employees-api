@@ -13,19 +13,20 @@ import (
 )
 
 type empRepoMock struct {
+	err error
 }
 
 func (e empRepoMock) Create(employee *domain.Employee) error {
-	if employee.ID == "err" {
-		return errors.New("Nope")
+	if e.err != nil {
+		return e.err
 	}
 
 	return nil
 }
 
 func (e empRepoMock) Get(id string) (*domain.Employee, error) {
-	if id == "err" {
-		return nil, errors.New("Nope")
+	if e.err != nil {
+		return nil, e.err
 	}
 
 	return &domain.Employee{
@@ -37,22 +38,26 @@ func (e empRepoMock) Get(id string) (*domain.Employee, error) {
 }
 
 func (e empRepoMock) Update(employee domain.Employee) error {
-	if employee.ID == "err" {
-		return errors.New("Nope")
+	if e.err != nil {
+		return e.err
 	}
 
 	return nil
 }
 
 func (e empRepoMock) Delete(id string) error {
-	if id == "err" {
-		return errors.New("Nope")
+	if e.err != nil {
+		return e.err
 	}
 
 	return nil
 }
 
 func (e empRepoMock) GetAll() ([]domain.Employee, error) {
+	if e.err != nil {
+		return nil, e.err
+	}
+
 	return []domain.Employee{
 		{
 			ID:         "id",
@@ -64,30 +69,32 @@ func (e empRepoMock) GetAll() ([]domain.Employee, error) {
 }
 
 func TestEmployeesController_GetEmployee(t *testing.T) {
-	repo := empRepoMock{}
-	h := NewEmployeesController(repo)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/employees/{id}", h.GetEmployee)
-
-	svr := httptest.NewServer(mux)
-	defer svr.Close()
-
 	tests := map[string]struct {
 		id       string
 		expected string
+		repo     empRepoMock
 	}{
 		"OK": {
 			id:       "id",
 			expected: "{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
+			repo:     empRepoMock{},
 		},
 		"err": {
 			id:       "err",
 			expected: "error getting employee\n",
+			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			h := NewEmployeesController(tt.repo)
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/employees/{id}", h.GetEmployee)
+
+			svr := httptest.NewServer(mux)
+			defer svr.Close()
+
 			req, err := http.NewRequest("GET", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
@@ -112,35 +119,38 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 }
 
 func TestEmployeesController_CreateEmployee(t *testing.T) {
-	repo := empRepoMock{}
-	h := NewEmployeesController(repo)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/employees", h.CreateEmployee)
-
-	svr := httptest.NewServer(mux)
-	defer svr.Close()
-
 	tests := map[string]struct {
 		body     string
 		expected string
+		repo     empRepoMock
 	}{
 		"OK": {
 			body:     "{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
 			expected: "{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
+			repo:     empRepoMock{},
 		},
 		"Empty body": {
 			body:     "",
 			expected: "invalid request body\n",
+			repo:     empRepoMock{},
 		},
 		"err": {
 			body:     "{\"id\":\"err\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
 			expected: "error creating employee\n",
+			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			h := NewEmployeesController(tt.repo)
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/employees", h.CreateEmployee)
+
+			svr := httptest.NewServer(mux)
+			defer svr.Close()
+
 			req, err := http.NewRequest("POST", fmt.Sprintf("%s/employees", svr.URL), strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
@@ -165,34 +175,36 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 }
 
 func TestEmployeesController_DeleteEmployee(t *testing.T) {
-	repo := empRepoMock{}
-	h := NewEmployeesController(repo)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/employees/{id}", h.DeleteEmployee)
-
-	svr := httptest.NewServer(mux)
-	defer svr.Close()
-
 	tests := map[string]struct {
 		id           string
 		expected     string
 		expectedCode int
+		repo         empRepoMock
 	}{
 		"OK": {
 			id:           "10",
 			expected:     "",
 			expectedCode: 204,
+			repo:         empRepoMock{},
 		},
 		"err": {
 			id:           "err",
 			expected:     "error deleting employee\n",
 			expectedCode: 500,
+			repo:         empRepoMock{err: errors.New("error")},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			h := NewEmployeesController(tt.repo)
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/employees/{id}", h.DeleteEmployee)
+
+			svr := httptest.NewServer(mux)
+			defer svr.Close()
+
 			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
@@ -222,39 +234,42 @@ func TestEmployeesController_DeleteEmployee(t *testing.T) {
 }
 
 func TestEmployeesController_UpdateEmployee(t *testing.T) {
-	repo := empRepoMock{}
-	h := NewEmployeesController(repo)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/employees/{id}", h.UpdateEmployee)
-
-	svr := httptest.NewServer(mux)
-	defer svr.Close()
-
 	tests := map[string]struct {
 		id       string
 		body     string
 		expected string
+		repo     empRepoMock
 	}{
 		"OK": {
 			id:       "id",
 			body:     "{\"id\":\"id\",\"firstname\":\"updated first name\",\"lastname\":\"updated last name\",\"position_id\":\"position id\"}",
 			expected: "{\"id\":\"id\",\"firstname\":\"updated first name\",\"lastname\":\"updated last name\",\"position_id\":\"position id\"}",
+			repo:     empRepoMock{},
 		},
 		"Empty body": {
 			id:       "id",
 			body:     "",
 			expected: "invalid request body\n",
+			repo:     empRepoMock{},
 		},
 		"err": {
 			id:       "err",
 			body:     "{\"id\":\"err\",\"firstname\":\"updated first name\",\"lastname\":\"updated last name\",\"position_id\":\"position id\"}",
 			expected: "error updating employee\n",
+			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			h := NewEmployeesController(tt.repo)
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/employees/{id}", h.UpdateEmployee)
+
+			svr := httptest.NewServer(mux)
+			defer svr.Close()
+
 			req, err := http.NewRequest("PUT", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
@@ -280,25 +295,30 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 }
 
 func TestEmployeesController_GetAllEmployees(t *testing.T) {
-	repo := empRepoMock{}
-	h := NewEmployeesController(repo)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/employees", h.GetAllEmployees)
-
-	svr := httptest.NewServer(mux)
-	defer svr.Close()
-
 	tests := map[string]struct {
 		expected string
+		repo     empRepoMock
 	}{
 		"OK": {
+			repo:     empRepoMock{},
 			expected: "[{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}]",
+		},
+		"err": {
+			repo:     empRepoMock{err: errors.New("error")},
+			expected: "error at getting all employees\n",
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			h := NewEmployeesController(tt.repo)
+
+			mux := http.NewServeMux()
+			mux.HandleFunc("/employees", h.GetAllEmployees)
+
+			svr := httptest.NewServer(mux)
+			defer svr.Close()
+
 			req, err := http.NewRequest("GET", fmt.Sprintf("%s/employees", svr.URL), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
