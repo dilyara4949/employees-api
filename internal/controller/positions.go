@@ -2,9 +2,10 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type PositionsController struct {

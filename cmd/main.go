@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/controller"
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
@@ -11,17 +15,11 @@ import (
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"net/http"
 )
 
 func main() {
-	positionsStorage := position.NewPositionsStorage()
-	employeeStorage := employee.NewEmployeesStorage()
-
-	positionRepo := position.NewPositionsRepository(positionsStorage)
-	employeeRepo := employee.NewEmployeesRepository(employeeStorage, positionRepo)
+	positionRepo := position.NewPositionsRepository()
+	employeeRepo := employee.NewEmployeesRepository(positionRepo)
 
 	config, err := conf.NewConfig()
 	if err != nil {
@@ -37,19 +35,19 @@ func main() {
 			log.Fatalf("Could not listen on port: %v", err)
 		}
 
-		s := grpc.NewServer(
+		svr := grpc.NewServer(
 			grpc.ChainUnaryInterceptor(
 				server.CorrelationIDInterceptor(),
 				server.LoggingInterceptor,
 			),
 			grpc.StreamInterceptor(server.StreamLoggingInterceptor),
 		)
-		pb.RegisterPositionServiceServer(s, positionServer)
-		pb.RegisterEmployeeServiceServer(s, employeeServer)
+		pb.RegisterPositionServiceServer(svr, positionServer)
+		pb.RegisterEmployeeServiceServer(svr, employeeServer)
 
-		reflection.Register(s)
+		reflection.Register(svr)
 
-		if err := s.Serve(listen); err != nil {
+		if err := svr.Serve(listen); err != nil {
 			log.Fatalf("Failed to serve: %v", err)
 		}
 
@@ -64,6 +62,7 @@ func main() {
 	route.SetUpRouter(employeeController, positionController, config, mux)
 
 	log.Printf("Starting server on :%s", config.RestPort)
+
 	err = http.ListenAndServe(fmt.Sprintf("%s:%s", config.Address, config.RestPort), mux)
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)

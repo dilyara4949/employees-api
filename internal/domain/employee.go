@@ -6,7 +6,7 @@ type Employee struct {
 	ID         string `json:"id"`
 	FirstName  string `json:"firstname"`
 	LastName   string `json:"lastname"`
-	PositionID string `json:"position_id"`
+	PositionID string `json:"positionId"`
 }
 
 type EmployeesRepository interface {

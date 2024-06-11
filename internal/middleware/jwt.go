@@ -21,12 +21,14 @@ func (j *JWTAuth) Auth() Middleware {
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
 				http.Error(w, "Authorization header required", http.StatusUnauthorized)
+
 				return
 			}
 
 			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 			if tokenString == authHeader {
 				http.Error(w, "Bearer token required", http.StatusUnauthorized)
+
 				return
 			}
 
@@ -34,6 +36,7 @@ func (j *JWTAuth) Auth() Middleware {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, jwt.NewValidationError("unexpected signing method", jwt.ValidationErrorSignatureInvalid)
 				}
+
 				return []byte(j.secret), nil
 			})
 

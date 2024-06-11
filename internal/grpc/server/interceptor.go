@@ -2,12 +2,13 @@ package server
 
 import (
 	"context"
+	"log"
+	"time"
+
 	"github.com/dilyara4949/employees-api/internal/middleware"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"log"
-	"time"
 )
 
 func LoggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
@@ -53,6 +54,7 @@ func getCorrelationIDFromStream(ss grpc.ServerStream) string {
 	if !ok {
 		return ""
 	}
+
 	if values := md["correlation_id"]; len(values) > 0 {
 		return values[0]
 	}

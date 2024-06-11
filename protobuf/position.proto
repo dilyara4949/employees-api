@@ -6,10 +6,14 @@ import "employee.proto";
 
 service PositionService {
   rpc Get(proto.Id) returns (Position);
-  rpc GetAll(proto.Empty) returns (stream Position);
+  rpc GetAll(proto.Empty) returns (PositionsList);
   rpc Create(Position) returns (Position);
   rpc Update(Position) returns (Position);
   rpc Delete(proto.Id) returns (proto.Status);
+}
+
+message PositionsList {
+  repeated Position position = 1;
 }
 
 message Position {

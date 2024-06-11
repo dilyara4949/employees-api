@@ -14,6 +14,7 @@ func Timer() Middleware {
 				log.Println("Correlation id set incorrect")
 				http.Error(w, "internal server error: Correlation id set incorrect", http.StatusInternalServerError)
 			}
+
 			start := time.Now()
 
 			h.ServeHTTP(w, r)

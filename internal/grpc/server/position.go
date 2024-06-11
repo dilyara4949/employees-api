@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+
 	"github.com/dilyara4949/employees-api/internal/domain"
 	pb "github.com/dilyara4949/employees-api/proto"
 )
@@ -12,14 +13,14 @@ type PositionServer struct {
 	pb.UnimplementedPositionServiceServer
 }
 
-func (s *PositionServer) GetAll(empty *pb.Empty, stream pb.PositionService_GetAllServer) error {
-	positions := s.Repo.GetAll(context.Background())
-	for _, pos := range positions {
-		if err := stream.Send(positionToProto(&pos)); err != nil {
-			return err
-		}
+func (s *PositionServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.PositionsList, error) {
+	positions := s.Repo.GetAll(ctx)
+
+	positionProtos := make([]*pb.Position, len(positions))
+	for i, pos := range positions {
+		positionProtos[i] = positionToProto(&pos)
 	}
-	return nil
+	return &pb.PositionsList{Position: positionProtos}, nil
 }
 
 func NewPositionServer(repo domain.PositionsRepository) *PositionServer {
@@ -46,6 +47,7 @@ func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Posi
 	}
 
 	position := protoToPosition(pos)
+
 	err := s.Repo.Create(ctx, position)
 	if err != nil {
 		return nil, err
@@ -59,6 +61,7 @@ func (s *PositionServer) Update(ctx context.Context, pos *pb.Position) (*pb.Posi
 	}
 
 	position := protoToPosition(pos)
+
 	err := s.Repo.Update(ctx, *position)
 	if err != nil {
 		return nil, err

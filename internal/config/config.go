@@ -13,26 +13,25 @@ type Config struct {
 }
 
 func NewConfig() (Config, error) {
-	config := Config{}
-
-	config.JWTTokenSecret = os.Getenv("JWT_TOKEN_SECRET")
-	if config.JWTTokenSecret == "" {
+	jwtTokenSecret := os.Getenv("JWT_TOKEN_SECRET")
+	if jwtTokenSecret == "" {
 		return Config{}, errors.New("JWT_TOKEN_SECRET is empty")
 	}
 
-	config.RestPort = os.Getenv("REST_PORT")
-	if config.RestPort == "" {
+	restPort := os.Getenv("REST_PORT")
+	if restPort == "" {
 		return Config{}, errors.New("REST_PORT is empty")
 	}
 
-	config.GrpcPort = os.Getenv("GRPC_PORT")
-	if config.GrpcPort == "" {
+	grpcPort := os.Getenv("GRPC_PORT")
+	if grpcPort == "" {
 		return Config{}, errors.New("GRPC_PORT is empty")
 	}
 
-	config.Address = os.Getenv("ADDRESS")
-	if config.Address == "" {
+	address := os.Getenv("ADDRESS")
+	if address == "" {
 		return Config{}, errors.New("ADDRESS is empty")
 	}
-	return config, nil
+
+	return Config{jwtTokenSecret, restPort, grpcPort, address}, nil
 }

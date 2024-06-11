@@ -10,5 +10,6 @@ func Chain(endpoint http.HandlerFunc, middlewares ...Middleware) http.HandlerFun
 	for _, middle := range middlewares {
 		endpoint = middle(endpoint)
 	}
+
 	return endpoint
 }

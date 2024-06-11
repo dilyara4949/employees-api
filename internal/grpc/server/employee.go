@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+
 	"github.com/dilyara4949/employees-api/internal/domain"
 	pb "github.com/dilyara4949/employees-api/proto"
 )
@@ -12,14 +13,14 @@ type EmployeeServer struct {
 	pb.UnimplementedEmployeeServiceServer
 }
 
-func (s *EmployeeServer) GetAll(empty *pb.Empty, stream pb.EmployeeService_GetAllServer) error {
-	employees := s.Repo.GetAll(context.Background())
-	for _, emp := range employees {
-		if err := stream.Send(employeeToProto(&emp)); err != nil {
-			return err
-		}
+func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.EmployeesList, error) {
+	employees := s.Repo.GetAll(ctx)
+
+	employeeProtos := make([]*pb.Employee, len(employees))
+	for i, emp := range employees {
+		employeeProtos[i] = employeeToProto(&emp)
 	}
-	return nil
+	return &pb.EmployeesList{Employee: employeeProtos}, nil
 }
 
 func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
@@ -46,6 +47,7 @@ func (s *EmployeeServer) Create(ctx context.Context, emp *pb.Employee) (*pb.Empl
 	}
 
 	employee := protoToEmployee(emp)
+
 	err := s.Repo.Create(ctx, employee)
 	if err != nil {
 		return nil, err
@@ -59,6 +61,7 @@ func (s *EmployeeServer) Update(ctx context.Context, emp *pb.Employee) (*pb.Empl
 	}
 
 	employee := protoToEmployee(emp)
+
 	err := s.Repo.Update(ctx, *employee)
 	if err != nil {
 		return nil, err
