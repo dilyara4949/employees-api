@@ -40,7 +40,6 @@ func main() {
 				server.CorrelationIDInterceptor(),
 				server.LoggingInterceptor,
 			),
-			grpc.StreamInterceptor(server.StreamLoggingInterceptor),
 		)
 		pb.RegisterPositionServiceServer(svr, positionServer)
 		pb.RegisterEmployeeServiceServer(svr, employeeServer)

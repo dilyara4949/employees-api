@@ -16,7 +16,7 @@ type PositionsRepository interface {
 }
 
 type employeeRepository struct {
-	mu            sync.Mutex
+	mu            sync.RWMutex
 	storage       map[string]domain.Employee
 	positionsRepo PositionsRepository
 }
@@ -43,8 +43,8 @@ func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employ
 }
 
 func (e *employeeRepository) Get(_ context.Context, id string) (*domain.Employee, error) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
+	e.mu.RLock()
+	defer e.mu.RUnlock()
 
 	if employee, ok := e.storage[id]; ok {
 		return &employee, nil
@@ -81,8 +81,8 @@ func (e *employeeRepository) Delete(_ context.Context, id string) error {
 }
 
 func (e *employeeRepository) GetAll(_ context.Context) []domain.Employee {
-	e.mu.Lock()
-	defer e.mu.Unlock()
+	e.mu.RLock()
+	defer e.mu.RUnlock()
 
 	employees := make([]domain.Employee, 0)
 

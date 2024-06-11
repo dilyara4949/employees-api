@@ -11,7 +11,7 @@ import (
 )
 
 type positionsRepository struct {
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	storage map[string]domain.Position
 }
 
@@ -30,8 +30,8 @@ func (p *positionsRepository) Create(ctx context.Context, position *domain.Posit
 }
 
 func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Position, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.mu.RLock()
+	defer p.mu.RUnlock()
 
 	if position, ok := p.storage[id]; ok {
 		return &position, nil
@@ -64,8 +64,8 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (p *positionsRepository) GetAll(ctx context.Context) []domain.Position {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.mu.RLock()
+	defer p.mu.RUnlock()
 
 	positions := make([]domain.Position, 0)
 
