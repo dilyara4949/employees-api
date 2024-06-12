@@ -1,38 +1,76 @@
 package position
 
 import (
+	"context"
+	"errors"
+	"sync"
+
 	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/dilyara4949/employees-api/internal/repository/storage"
 
 	"github.com/google/uuid"
 )
 
 type positionsRepository struct {
-	positionsStorage *storage.PositionsStorage
+	mu      sync.RWMutex
+	storage map[string]domain.Position
 }
 
-func NewPositionsRepository(positionsStorage *storage.PositionsStorage) domain.PositionsRepository {
-	return &positionsRepository{positionsStorage: positionsStorage}
+func NewPositionsRepository() domain.PositionsRepository {
+	return &positionsRepository{storage: make(map[string]domain.Position)}
 }
 
-func (p *positionsRepository) Create(position *domain.Position) error {
+func (p *positionsRepository) Create(ctx context.Context, position *domain.Position) error {
 	position.ID = uuid.New().String()
-	p.positionsStorage.Add(*position)
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.storage[position.ID] = *position
 	return nil
 }
 
-func (p *positionsRepository) Get(id string) (*domain.Position, error) {
-	return p.positionsStorage.Get(id)
+func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Position, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	if position, ok := p.storage[id]; ok {
+		return &position, nil
+	}
+	return nil, errors.New("position not found")
 }
 
-func (p *positionsRepository) Update(position domain.Position) error {
-	return p.positionsStorage.Update(position)
+func (p *positionsRepository) Update(ctx context.Context, position domain.Position) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if _, ok := p.storage[position.ID]; !ok {
+		return errors.New("position not found")
+	}
+
+	p.storage[position.ID] = position
+	return nil
 }
 
-func (p *positionsRepository) Delete(id string) error {
-	return p.positionsStorage.Delete(id)
+func (p *positionsRepository) Delete(ctx context.Context, id string) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if _, ok := p.storage[id]; !ok {
+		return errors.New("position not found")
+	}
+
+	delete(p.storage, id)
+	return nil
 }
 
-func (p *positionsRepository) GetAll() ([]domain.Position, error) {
-	return p.positionsStorage.All()
+func (p *positionsRepository) GetAll(ctx context.Context) ([]domain.Position, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	positions := make([]domain.Position, 0)
+
+	for _, position := range p.storage {
+		positions = append(positions, position)
+	}
+	return positions, nil
 }

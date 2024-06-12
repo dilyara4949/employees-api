@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -16,14 +17,14 @@ type posRepoMock struct {
 	err error
 }
 
-func (p posRepoMock) Create(position *domain.Position) error {
+func (p posRepoMock) Create(_ context.Context, position *domain.Position) error {
 	if p.err != nil {
 		return p.err
 	}
 	return nil
 }
 
-func (p posRepoMock) Get(id string) (*domain.Position, error) {
+func (p posRepoMock) Get(_ context.Context, id string) (*domain.Position, error) {
 	if p.err != nil {
 		return nil, p.err
 	}
@@ -34,21 +35,21 @@ func (p posRepoMock) Get(id string) (*domain.Position, error) {
 	}, nil
 }
 
-func (p posRepoMock) Update(position domain.Position) error {
+func (p posRepoMock) Update(_ context.Context, position domain.Position) error {
 	if p.err != nil {
 		return p.err
 	}
 	return nil
 }
 
-func (p posRepoMock) Delete(id string) error {
+func (p posRepoMock) Delete(_ context.Context, id string) error {
 	if p.err != nil {
 		return p.err
 	}
 	return nil
 }
 
-func (p posRepoMock) GetAll() ([]domain.Position, error) {
+func (p posRepoMock) GetAll(_ context.Context) ([]domain.Position, error) {
 	if p.err != nil {
 		return nil, p.err
 	}

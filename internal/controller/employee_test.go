@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -16,7 +17,7 @@ type empRepoMock struct {
 	err error
 }
 
-func (e empRepoMock) Create(employee *domain.Employee) error {
+func (e empRepoMock) Create(_ context.Context, employee *domain.Employee) error {
 	if e.err != nil {
 		return e.err
 	}
@@ -24,7 +25,7 @@ func (e empRepoMock) Create(employee *domain.Employee) error {
 	return nil
 }
 
-func (e empRepoMock) Get(id string) (*domain.Employee, error) {
+func (e empRepoMock) Get(_ context.Context, id string) (*domain.Employee, error) {
 	if e.err != nil {
 		return nil, e.err
 	}
@@ -37,7 +38,7 @@ func (e empRepoMock) Get(id string) (*domain.Employee, error) {
 	}, nil
 }
 
-func (e empRepoMock) Update(employee domain.Employee) error {
+func (e empRepoMock) Update(_ context.Context, employee domain.Employee) error {
 	if e.err != nil {
 		return e.err
 	}
@@ -45,7 +46,7 @@ func (e empRepoMock) Update(employee domain.Employee) error {
 	return nil
 }
 
-func (e empRepoMock) Delete(id string) error {
+func (e empRepoMock) Delete(_ context.Context, id string) error {
 	if e.err != nil {
 		return e.err
 	}
@@ -53,7 +54,7 @@ func (e empRepoMock) Delete(id string) error {
 	return nil
 }
 
-func (e empRepoMock) GetAll() ([]domain.Employee, error) {
+func (e empRepoMock) GetAll(_ context.Context) ([]domain.Employee, error) {
 	if e.err != nil {
 		return nil, e.err
 	}

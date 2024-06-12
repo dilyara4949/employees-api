@@ -1,0 +1,23 @@
+syntax = "proto3";
+package employees_api.proto;
+option go_package = "./proto;proto";
+
+import "employee.proto";
+
+service PositionService {
+  rpc Get(proto.Id) returns (Position);
+  rpc GetAll(proto.Empty) returns (PositionsList);
+  rpc Create(Position) returns (Position);
+  rpc Update(Position) returns (Position);
+  rpc Delete(proto.Id) returns (proto.Status);
+}
+
+message PositionsList {
+  repeated Position position = 1;
+}
+
+message Position {
+  string id = 1;
+  string name = 2;
+  int32 salary = 3;
+}

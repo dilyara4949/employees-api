@@ -18,12 +18,12 @@ func TestNewConfig(t *testing.T) {
 			name: "OK",
 			input: map[string]string{
 				"ADDRESS":          "address",
-				"PORT":             "port",
+				"REST_PORT":        "restport",
 				"JWT_TOKEN_SECRET": "secret",
 			},
 			want: Config{
 				Address:        "address",
-				Port:           "port",
+				RestPort:       "restport",
 				JWTTokenSecret: "secret",
 			},
 		},

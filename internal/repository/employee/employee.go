@@ -1,53 +1,93 @@
 package employee
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"sync"
+
 	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/dilyara4949/employees-api/internal/repository/storage"
 
 	"github.com/google/uuid"
 )
 
 type PositionsRepository interface {
-	Get(id string) (*domain.Position, error)
+	Get(ctx context.Context, id string) (*domain.Position, error)
 }
 
 type employeeRepository struct {
-	employeesStorage *storage.EmployeesStorage
-	positionsRepo    PositionsRepository
+	mu            sync.RWMutex
+	storage       map[string]domain.Employee
+	positionsRepo PositionsRepository
 }
 
-func NewEmployeesRepository(employeesStorage *storage.EmployeesStorage, positionsRepo PositionsRepository) domain.EmployeesRepository {
-	return &employeeRepository{employeesStorage: employeesStorage, positionsRepo: positionsRepo}
+func NewEmployeesRepository(positionsRepo PositionsRepository) domain.EmployeesRepository {
+	return &employeeRepository{
+		storage:       make(map[string]domain.Employee),
+		positionsRepo: positionsRepo,
+	}
 }
 
-func (e *employeeRepository) Create(employee *domain.Employee) error {
-	if _, err := e.positionsRepo.Get(employee.PositionID); err != nil {
+func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employee) error {
+	if _, err := e.positionsRepo.Get(ctx, employee.PositionID); err != nil {
 		return fmt.Errorf("error to create employee: %w", err)
 	}
 
 	employee.ID = uuid.New().String()
-	e.employeesStorage.Add(*employee)
+
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.storage[employee.ID] = *employee
 
 	return nil
 }
 
-func (e *employeeRepository) Get(id string) (*domain.Employee, error) {
-	return e.employeesStorage.Get(id)
+func (e *employeeRepository) Get(_ context.Context, id string) (*domain.Employee, error) {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	if employee, ok := e.storage[id]; ok {
+		return &employee, nil
+	}
+	return nil, errors.New("employee not found")
 }
 
-func (e *employeeRepository) Update(employee domain.Employee) error {
-
-	if _, err := e.positionsRepo.Get(employee.PositionID); err != nil {
+func (e *employeeRepository) Update(ctx context.Context, employee domain.Employee) error {
+	if _, err := e.positionsRepo.Get(ctx, employee.PositionID); err != nil {
 		return fmt.Errorf("error to update employee: %w", err)
 	}
-	return e.employeesStorage.Update(employee)
+
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if _, ok := e.storage[employee.ID]; !ok {
+		return errors.New("employee not found")
+	}
+
+	e.storage[employee.ID] = employee
+	return nil
 }
 
-func (e *employeeRepository) Delete(id string) error {
-	return e.employeesStorage.Delete(id)
+func (e *employeeRepository) Delete(_ context.Context, id string) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if _, ok := e.storage[id]; !ok {
+		return errors.New("employee not found")
+	}
+
+	delete(e.storage, id)
+	return nil
 }
 
-func (e *employeeRepository) GetAll() ([]domain.Employee, error) {
-	return e.employeesStorage.All()
+func (e *employeeRepository) GetAll(_ context.Context) ([]domain.Employee, error) {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	employees := make([]domain.Employee, 0)
+
+	for _, employee := range e.storage {
+		employees = append(employees, employee)
+	}
+	return employees, nil
 }

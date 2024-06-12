@@ -1,0 +1,32 @@
+syntax = "proto3";
+package employees_api.proto;
+option go_package = "./proto;proto";
+
+service EmployeeService {
+  rpc Get(Id) returns (Employee);
+  rpc GetAll(Empty) returns (EmployeesList);
+  rpc Create(Employee) returns (Employee);
+  rpc Update(Employee) returns (Employee);
+  rpc Delete(Id) returns (Status);
+}
+
+message Empty {}
+
+message Id {
+  string value = 1;
+}
+
+message Status {
+  int32 status = 1;
+}
+
+message EmployeesList {
+  repeated Employee employee = 1;
+}
+
+message Employee {
+  string id = 1;
+  string firstname = 2;
+  string lastname = 3;
+  string position_id = 4;
+}
