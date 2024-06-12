@@ -11,5 +11,5 @@ type PositionsRepository interface {
 	Get(id string) (*Position, error)
 	Update(Position) error
 	Delete(id string) error
-	GetAll() []Position
+	GetAll() ([]Position, error)
 }

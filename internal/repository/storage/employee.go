@@ -58,12 +58,12 @@ func (storage *EmployeesStorage) Delete(id string) error {
 	return nil
 }
 
-func (storage *EmployeesStorage) All() []domain.Employee {
+func (storage *EmployeesStorage) All() ([]domain.Employee, error) {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()
 	employees := make([]domain.Employee, 0)
 	for _, employee := range storage.Storage {
 		employees = append(employees, employee)
 	}
-	return employees
+	return employees, nil
 }

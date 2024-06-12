@@ -58,7 +58,7 @@ func (storage *PositionsStorage) Delete(id string) error {
 	return nil
 }
 
-func (storage *PositionsStorage) All() []domain.Position {
+func (storage *PositionsStorage) All() ([]domain.Position, error) {
 	storage.mu.Lock()
 	defer storage.mu.Unlock()
 
@@ -67,5 +67,5 @@ func (storage *PositionsStorage) All() []domain.Position {
 	for _, position := range storage.Storage {
 		positions = append(positions, position)
 	}
-	return positions
+	return positions, nil
 }
