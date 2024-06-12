@@ -17,3 +17,6 @@ htmlcov:
 
 testcov:
 	go test -v -covermode=count -coverprofile=coverage.out ./...
+
+dockrunpq:
+	docker run -it --rm --network mynetwork postgres psql -h postgre -U postgres
