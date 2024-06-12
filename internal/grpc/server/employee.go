@@ -21,7 +21,10 @@ func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
 }
 
 func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.EmployeesList, error) {
-	employees := s.Repo.GetAll(ctx)
+	employees, err := s.Repo.GetAll(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
 
 	employeeProtos := make([]*pb.Employee, len(employees))
 	for i, emp := range employees {

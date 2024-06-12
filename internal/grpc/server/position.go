@@ -15,7 +15,10 @@ type PositionServer struct {
 }
 
 func (s *PositionServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.PositionsList, error) {
-	positions := s.Repo.GetAll(ctx)
+	positions, err := s.Repo.GetAll(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
 
 	positionProtos := make([]*pb.Position, len(positions))
 	for i, pos := range positions {
