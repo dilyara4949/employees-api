@@ -80,7 +80,7 @@ func (e *employeeRepository) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-func (e *employeeRepository) GetAll(_ context.Context) []domain.Employee {
+func (e *employeeRepository) GetAll(_ context.Context) ([]domain.Employee, error) {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
@@ -89,5 +89,5 @@ func (e *employeeRepository) GetAll(_ context.Context) []domain.Employee {
 	for _, employee := range e.storage {
 		employees = append(employees, employee)
 	}
-	return employees
+	return employees, nil
 }

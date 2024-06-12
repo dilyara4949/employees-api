@@ -12,6 +12,12 @@ type Config struct {
 	Address        string
 }
 
+var (
+	errMissingPort           = errors.New("PORT is empty")
+	errMissingAddress        = errors.New("ADDRESS is empty")
+	errMissingJWTTokenSecret = errors.New("JWT_TOKEN_SECRET is empty")
+)
+
 func NewConfig() (Config, error) {
 	jwtTokenSecret := os.Getenv("JWT_TOKEN_SECRET")
 	if jwtTokenSecret == "" {

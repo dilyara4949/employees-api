@@ -2,10 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
-
-	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type PositionsController struct {
@@ -139,7 +138,10 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	positions := c.Repo.GetAll(r.Context())
+	positions, err := c.Repo.GetAll(r.Context())
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError})
+	}
 
 	response, err := json.Marshal(positions)
 	if err != nil {

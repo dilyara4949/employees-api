@@ -1,10 +1,9 @@
 package controller
 
 import (
+	"github.com/dilyara4949/employees-api/internal/middleware"
 	"log"
 	"net/http"
-
-	"github.com/dilyara4949/employees-api/internal/middleware"
 )
 
 type HTTPError struct {

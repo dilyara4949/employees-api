@@ -63,7 +63,7 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (p *positionsRepository) GetAll(ctx context.Context) []domain.Position {
+func (p *positionsRepository) GetAll(ctx context.Context) ([]domain.Position, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
@@ -72,5 +72,5 @@ func (p *positionsRepository) GetAll(ctx context.Context) []domain.Position {
 	for _, position := range p.storage {
 		positions = append(positions, position)
 	}
-	return positions
+	return positions, nil
 }

@@ -14,5 +14,5 @@ type EmployeesRepository interface {
 	Get(ctx context.Context, id string) (*Employee, error)
 	Update(ctx context.Context, emp Employee) error
 	Delete(ctx context.Context, id string) error
-	GetAll(ctx context.Context) []Employee
+	GetAll(ctx context.Context) ([]Employee, error)
 }

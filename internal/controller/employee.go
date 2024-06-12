@@ -2,10 +2,9 @@ package controller
 
 import (
 	"encoding/json"
+	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
-
-	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type EmployeesController struct {
@@ -139,7 +138,11 @@ func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	employees := e.Repo.GetAll(r.Context())
+	employees, err := e.Repo.GetAll(r.Context())
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "error at get all employees", Status: http.StatusInternalServerError})
+		return
+	}
 
 	response, err := json.Marshal(employees)
 	if err != nil {
