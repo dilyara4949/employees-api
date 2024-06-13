@@ -10,6 +10,11 @@ type Config struct {
 	RestPort       string
 	GrpcPort       string
 	Address        string
+	DbHost         string
+	DbPort         string
+	DbUser         string
+	DbPassword     string
+	DbName         string
 }
 
 var (
@@ -19,25 +24,66 @@ var (
 )
 
 func NewConfig() (Config, error) {
+
+	errs := make([]error, 0)
+
 	jwtTokenSecret := os.Getenv("JWT_TOKEN_SECRET")
 	if jwtTokenSecret == "" {
-		return Config{}, errors.New("JWT_TOKEN_SECRET is empty")
+		errs = append(errs, errors.New("JWT_TOKEN_SECRET is empty"))
 	}
 
 	restPort := os.Getenv("REST_PORT")
 	if restPort == "" {
-		return Config{}, errors.New("REST_PORT is empty")
+		errs = append(errs, errors.New("REST_PORT is empty"))
 	}
 
 	grpcPort := os.Getenv("GRPC_PORT")
 	if grpcPort == "" {
-		return Config{}, errors.New("GRPC_PORT is empty")
+		errs = append(errs, errors.New("GRPC_PORT is empty"))
 	}
 
 	address := os.Getenv("ADDRESS")
 	if address == "" {
-		return Config{}, errors.New("ADDRESS is empty")
+		errs = append(errs, errors.New("ADDRESS is empty"))
 	}
 
-	return Config{jwtTokenSecret, restPort, grpcPort, address}, nil
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		errs = append(errs, errors.New("DB_HOST is empty"))
+	}
+
+	dbPort := os.Getenv("DB_PORT")
+	if dbPort == "" {
+		errs = append(errs, errors.New("DB_PORT is empty"))
+	}
+
+	dbUser := os.Getenv("DB_USER")
+	if dbUser == "" {
+		errs = append(errs, errors.New("DB_USER is empty"))
+	}
+
+	dbPassword := os.Getenv("DB_PASSWORD")
+	if dbPassword == "" {
+		errs = append(errs, errors.New("DB_PASSWORD is empty"))
+	}
+
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		errs = append(errs, errors.New("DB_NAME is empty"))
+	}
+
+	if err := errors.Join(errs...); err != nil {
+		return Config{}, err
+	}
+
+	return Config{
+		jwtTokenSecret,
+		restPort,
+		grpcPort,
+		address,
+		dbHost,
+		dbPort,
+		dbUser,
+		dbPassword,
+		dbName}, nil
 }

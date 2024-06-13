@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/dilyara4949/employees-api/internal/database"
 	"log"
 	"net"
 	"net/http"
@@ -18,13 +19,22 @@ import (
 )
 
 func main() {
-	positionRepo := position.NewPositionsRepository()
-	employeeRepo := employee.NewEmployeesRepository(positionRepo)
 
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
+
+	db, err := database.ConnectPostgres(config)
+	if err != nil {
+		log.Fatalf("Connection to database failed: %s", err)
+	}
+	defer db.Close()
+
+	log.Println("Successfully connected to database")
+
+	positionRepo := position.NewPositionsRepository(db)
+	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	go func() {
 		positionServer := server.NewPositionServer(positionRepo)
