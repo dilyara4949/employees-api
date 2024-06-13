@@ -1,19 +1,18 @@
-
-create table positions (
-                           id varchar primary key,
-                           name varchar,
-                           salary int
-                               created_at timestamptz default current_timestamp,
-                           updated_at timestamptz default current_timestamp,
+CREATE TABLE positions (
+                           id VARCHAR PRIMARY KEY,
+                           name VARCHAR(255) NOT NULL,
+                           salary INT NOT NULL,
+                           created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                           updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-create table employees (
-                           id varchar primary key,
-                           firstname varchar,
-                           lastname varchar,
-                           position_id references positions(id)
-                               created_at timestamptz default current_timestamp,
-                           updated_at timestamptz default current_timestamp,
+CREATE TABLE employees (
+                           id VARCHAR PRIMARY KEY,
+                           first_name VARCHAR(255) NOT NULL,
+                           last_name VARCHAR(255) NOT NULL,
+                           position_id VARCHAR REFERENCES positions(id),
+                           created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                           updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_employees_first_name ON employees(first_name);

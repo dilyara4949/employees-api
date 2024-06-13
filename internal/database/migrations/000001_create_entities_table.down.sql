@@ -1,3 +1,3 @@
-drop table positions;
 
-drop table employees;
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS positions;;
