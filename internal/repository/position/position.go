@@ -30,8 +30,8 @@ func (p *positionsRepository) Create(ctx context.Context, position *domain.Posit
 func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Position, error) {
 	stmt := "select name, salary from positions where id = $1;"
 	row := p.db.QueryRow(stmt, id)
-
 	position := domain.Position{}
+
 	switch err := row.Scan(&position.Name, &position.Salary); err {
 	case sql.ErrNoRows:
 		return nil, errors.New("position does not found")
@@ -70,7 +70,7 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (p *positionsRepository) GetAll(ctx context.Context) ([]domain.Position, error) {
+func (p *positionsRepository) GetAll2(ctx context.Context) ([]domain.Position, error) {
 	stmt := "select id, name, salary from positions;"
 	rows, err := p.db.Query(stmt)
 	if err != nil {
@@ -89,5 +89,28 @@ func (p *positionsRepository) GetAll(ctx context.Context) ([]domain.Position, er
 		positions = append(positions, position)
 	}
 
+	return positions, nil
+}
+
+func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) ([]domain.Position, error) {
+	offset := (page - 1) * pageSize
+
+	stmt := "select id, name, salary from positions limit $1 offset $2;"
+	rows, err := p.db.Query(stmt, pageSize, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	positions := make([]domain.Position, 0)
+	for rows.Next() {
+		position := domain.Position{}
+
+		err = rows.Scan(&position.ID, &position.Name, &position.Salary)
+		if err != nil {
+			return nil, err
+		}
+		positions = append(positions, position)
+	}
 	return positions, nil
 }

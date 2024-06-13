@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/dilyara4949/employees-api/internal/database"
 	"log"
-	"net"
+	//"net"
 	"net/http"
 
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/controller"
-	"github.com/dilyara4949/employees-api/internal/grpc/server"
+	//"github.com/dilyara4949/employees-api/internal/grpc/server"
 	"github.com/dilyara4949/employees-api/internal/repository/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/position"
 	"github.com/dilyara4949/employees-api/internal/route"
-	pb "github.com/dilyara4949/employees-api/proto"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	//pb "github.com/dilyara4949/employees-api/proto"
+	//"google.golang.org/grpc"
+	//"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -36,32 +36,32 @@ func main() {
 	positionRepo := position.NewPositionsRepository(db)
 	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
-	go func() {
-		positionServer := server.NewPositionServer(positionRepo)
-		employeeServer := server.NewEmployeeServer(employeeRepo)
-
-		listen, err := net.Listen("tcp", fmt.Sprintf("%s:%s", config.Address, config.GrpcPort))
-		if err != nil {
-			log.Fatalf("Could not listen on port: %v", err)
-		}
-
-		svr := grpc.NewServer(
-			grpc.ChainUnaryInterceptor(
-				server.CorrelationIDInterceptor(),
-				server.LoggingInterceptor,
-			),
-		)
-		pb.RegisterPositionServiceServer(svr, positionServer)
-		pb.RegisterEmployeeServiceServer(svr, employeeServer)
-
-		reflection.Register(svr)
-
-		if err := svr.Serve(listen); err != nil {
-			log.Fatalf("Failed to serve: %v", err)
-		}
-
-		log.Printf("Hosting server on: %s", listen.Addr().String())
-	}()
+	//go func() {
+	//	positionServer := server.NewPositionServer(positionRepo)
+	//	employeeServer := server.NewEmployeeServer(employeeRepo)
+	//
+	//	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%s", config.Address, config.GrpcPort))
+	//	if err != nil {
+	//		log.Fatalf("Could not listen on port: %v", err)
+	//	}
+	//
+	//	svr := grpc.NewServer(
+	//		grpc.ChainUnaryInterceptor(
+	//			server.CorrelationIDInterceptor(),
+	//			server.LoggingInterceptor,
+	//		),
+	//	)
+	//	pb.RegisterPositionServiceServer(svr, positionServer)
+	//	pb.RegisterEmployeeServiceServer(svr, employeeServer)
+	//
+	//	reflection.Register(svr)
+	//
+	//	if err := svr.Serve(listen); err != nil {
+	//		log.Fatalf("Failed to serve: %v", err)
+	//	}
+	//
+	//	log.Printf("Hosting server on: %s", listen.Addr().String())
+	//}()
 
 	positionController := controller.NewPositionsController(positionRepo)
 	employeeController := controller.NewEmployeesController(employeeRepo)

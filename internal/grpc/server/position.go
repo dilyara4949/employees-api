@@ -15,7 +15,7 @@ type PositionServer struct {
 }
 
 func (s *PositionServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.PositionsList, error) {
-	positions, err := s.Repo.GetAll(ctx)
+	positions, err := s.Repo.GetAll(ctx, 1, 1)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

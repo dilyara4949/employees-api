@@ -54,7 +54,7 @@ func (e empRepoMock) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-func (e empRepoMock) GetAll(_ context.Context) ([]domain.Employee, error) {
+func (e empRepoMock) GetAll(_ context.Context, page, pageSize int64) ([]domain.Employee, error) {
 	if e.err != nil {
 		return nil, e.err
 	}

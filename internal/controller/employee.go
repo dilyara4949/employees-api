@@ -5,6 +5,7 @@ import (
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 type EmployeesController struct {
@@ -138,7 +139,19 @@ func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	employees, err := e.Repo.GetAll(r.Context())
+	page, err := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "page format is incorrect", Status: http.StatusBadGateway, Cause: err})
+		return
+	}
+
+	pageSize, err := strconv.ParseInt(r.URL.Query().Get("size"), 10, 32)
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "page size format is incorrect", Status: http.StatusBadGateway, Cause: err})
+		return
+	}
+
+	employees, err := e.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error at get all employees", Status: http.StatusInternalServerError})
 		return

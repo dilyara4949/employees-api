@@ -32,7 +32,7 @@ func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employ
 
 	employee.ID = uuid.New().String()
 
-	stmt := "insert into positions (id, first_name, last_name, position_id, created_at) values ($1, $2, $3, $4, CURRENT_TIMESTAMP);"
+	stmt := "insert into employees (id, first_name, last_name, position_id, created_at) values ($1, $2, $3, $4, CURRENT_TIMESTAMP);"
 
 	if _, err := e.db.Exec(stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID); err != nil {
 		return err
@@ -54,10 +54,6 @@ func (e *employeeRepository) Get(_ context.Context, id string) (*domain.Employee
 		return nil, err
 	}
 }
-
-// update positions
-// set name = $2, salary = $3, updated_at = CURRENT_TIMESTAMP
-// where id = $1;
 
 func (e *employeeRepository) Update(ctx context.Context, employee domain.Employee) error {
 	stmt := "update employees set first_name = $2, last_name = $3, position_id = $4, updated_at = CURRENT_TIMESTAMP where id = $1;"
@@ -89,9 +85,7 @@ func (e *employeeRepository) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-// select id, first_name, last_name, employee_id, created_at, updated_at from positions;
-
-func (e *employeeRepository) GetAll(_ context.Context) ([]domain.Employee, error) {
+func (e *employeeRepository) GetAll2(_ context.Context) ([]domain.Employee, error) {
 	stmt := "select id, name, salary from employees;"
 	rows, err := e.db.Query(stmt)
 	if err != nil {
@@ -110,5 +104,28 @@ func (e *employeeRepository) GetAll(_ context.Context) ([]domain.Employee, error
 		employees = append(employees, employee)
 	}
 
+	return employees, nil
+}
+func (e *employeeRepository) GetAll(_ context.Context, page, pageSize int64) ([]domain.Employee, error) {
+
+	offset := (page - 1) * pageSize
+
+	stmt := "select id, first_name, last_name, position_id from employees limit $1 offset $2;"
+	rows, err := e.db.Query(stmt, pageSize, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	employees := make([]domain.Employee, 0)
+	for rows.Next() {
+		employee := domain.Employee{}
+
+		err = rows.Scan(&employee.ID, &employee.FirstName, &employee.LastName, &employee.PositionID)
+		if err != nil {
+			return nil, err
+		}
+		employees = append(employees, employee)
+	}
 	return employees, nil
 }

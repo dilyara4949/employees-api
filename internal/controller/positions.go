@@ -5,6 +5,7 @@ import (
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 type PositionsController struct {
@@ -138,7 +139,19 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	positions, err := c.Repo.GetAll(r.Context())
+	page, err := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "page format is incorrect", Status: http.StatusBadGateway, Cause: err})
+		return
+	}
+
+	pageSize, err := strconv.ParseInt(r.URL.Query().Get("size"), 10, 32)
+	if err != nil {
+		errorHandler(w, r, &HTTPError{Detail: "page size format is incorrect", Status: http.StatusBadGateway, Cause: err})
+		return
+	}
+
+	positions, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError})
 	}

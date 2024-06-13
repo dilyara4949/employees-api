@@ -13,5 +13,5 @@ type PositionsRepository interface {
 	Get(ctx context.Context, id string) (*Position, error)
 	Update(ctx context.Context, pos Position) error
 	Delete(ctx context.Context, id string) error
-	GetAll(ctx context.Context) ([]Position, error)
+	GetAll(ctx context.Context, page, pageSize int64) ([]Position, error)
 }
