@@ -1,4 +1,5 @@
 DB_URL=postgres://postgres:12345@localhost:5432/postgres?sslmode=disable
+TEST_DB_URL=postgres://postgres:12345@localhost:5432/testpostgres?sslmode=disable
 
 .PHONY: migrate-up migrate-down create-migration proto
 
@@ -28,6 +29,12 @@ migrate-up:
 
 migrate-down:
 	migrate -database $(DB_URL) -path internal/database/migrations down
+
+migrate-test-up:
+	migrate -database $(TEST_DB_URL) -path internal/database/migrations up
+
+migrate-test-down:
+	migrate -database $(TEST_DB_URL) -path internal/database/migrations down
 
 create-migration:
 	@read -p "migration name: " name; \

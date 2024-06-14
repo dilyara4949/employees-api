@@ -21,7 +21,13 @@ func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
 }
 
 func (s *EmployeeServer) GetAll(ctx context.Context, req *pb.GetAllEmployeesRequest) (*pb.EmployeesList, error) {
-	employees, err := s.Repo.GetAll(ctx, req.GetPage(), req.GetPageSize())
+	page := req.GetPage()
+	pageSize := req.GetPageSize()
+
+	if page <= 0 || pageSize <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "page and page size cannot be less than 1")
+	}
+	employees, err := s.Repo.GetAll(ctx, page, pageSize)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -30,7 +36,7 @@ func (s *EmployeeServer) GetAll(ctx context.Context, req *pb.GetAllEmployeesRequ
 	for i, emp := range employees {
 		employeeProtos[i] = employeeToProto(&emp)
 	}
-	return &pb.EmployeesList{Employee: employeeProtos}, nil
+	return &pb.EmployeesList{Employee: employeeProtos, Page: page, PageSize: pageSize}, nil
 }
 
 func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, error) {

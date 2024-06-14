@@ -82,7 +82,7 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 		},
 		"err": {
 			id:       "err",
-			expected: "error getting employee\n",
+			expected: "internal server error: Correlation id set incorrect\nerror getting employee\n",
 			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}
@@ -132,12 +132,12 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 		},
 		"Empty body": {
 			body:     "",
-			expected: "invalid request body\n",
+			expected: "internal server error: Correlation id set incorrect\ninvalid request body\n",
 			repo:     empRepoMock{},
 		},
 		"err": {
 			body:     "{\"id\":\"err\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
-			expected: "error creating employee\n",
+			expected: "internal server error: Correlation id set incorrect\nerror creating employee\n",
 			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}

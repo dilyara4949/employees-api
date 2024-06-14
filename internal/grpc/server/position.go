@@ -15,7 +15,14 @@ type PositionServer struct {
 }
 
 func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequest) (*pb.PositionsList, error) {
-	positions, err := s.Repo.GetAll(ctx, req.GetPage(), req.GetPageSize())
+	page := req.GetPage()
+	pageSize := req.GetPageSize()
+
+	if page <= 0 || pageSize <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "page and page size cannot be less than 1")
+	}
+
+	positions, err := s.Repo.GetAll(ctx, page, pageSize)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -24,7 +31,7 @@ func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequ
 	for i, pos := range positions {
 		positionProtos[i] = positionToProto(&pos)
 	}
-	return &pb.PositionsList{Position: positionProtos}, nil
+	return &pb.PositionsList{Position: positionProtos, Page: page, PageSize: pageSize}, nil
 }
 
 func NewPositionServer(repo domain.PositionsRepository) *PositionServer {

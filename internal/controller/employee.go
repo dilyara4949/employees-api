@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strconv"
@@ -58,6 +59,8 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
+
+	employee.ID = uuid.New().String()
 
 	if err = c.Repo.Create(r.Context(), &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating employee", Status: http.StatusInternalServerError, Cause: err})
@@ -133,7 +136,7 @@ func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Requ
 	w.Write(response)
 }
 
-func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
+func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all employees", Status: http.StatusMethodNotAllowed})
 		return
@@ -151,9 +154,14 @@ func (e *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	employees, err := e.Repo.GetAll(r.Context(), page, pageSize)
+	if page <= 0 || pageSize <= 0 {
+		errorHandler(w, r, &HTTPError{Detail: "page and page size cannot be less than 1", Status: http.StatusBadGateway, Cause: err})
+		return
+	}
+
+	employees, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at get all employees", Status: http.StatusInternalServerError})
+		errorHandler(w, r, &HTTPError{Detail: "error at get all employees", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 

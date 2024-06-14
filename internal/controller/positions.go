@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strconv"
@@ -58,6 +59,8 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
+
+	position.ID = uuid.New().String()
 
 	if err = c.Repo.Create(r.Context(), &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
@@ -153,7 +156,7 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 
 	positions, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError})
+		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError, Cause: err})
 	}
 
 	response, err := json.Marshal(positions)

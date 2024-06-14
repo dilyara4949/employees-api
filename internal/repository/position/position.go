@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/dilyara4949/employees-api/internal/domain"
-
-	"github.com/google/uuid"
 )
 
 type positionsRepository struct {
@@ -17,9 +15,12 @@ func NewPositionsRepository(db *sql.DB) domain.PositionsRepository {
 	return &positionsRepository{db: db}
 }
 
-func (p *positionsRepository) Create(ctx context.Context, position *domain.Position) error {
-	position.ID = uuid.New().String()
+var (
+	ErrPositionNotFound = errors.New("position not found")
+	ErrNothingChanged   = errors.New("nothing changed")
+)
 
+func (p *positionsRepository) Create(ctx context.Context, position *domain.Position) error {
 	stmt := "insert into positions (id, name, salary, created_at) values ($1, $2, $3, CURRENT_TIMESTAMP);"
 	if _, err := p.db.Exec(stmt, position.ID, position.Name, position.Salary); err != nil {
 		return err
@@ -34,8 +35,9 @@ func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Posit
 
 	switch err := row.Scan(&position.Name, &position.Salary); err {
 	case sql.ErrNoRows:
-		return nil, errors.New("position does not found")
+		return nil, ErrPositionNotFound
 	case nil:
+		position.ID = id
 		return &position, nil
 	default:
 		return nil, err
@@ -51,7 +53,7 @@ func (p *positionsRepository) Update(ctx context.Context, position domain.Positi
 	}
 
 	if cnt, _ := res.RowsAffected(); cnt != 1 {
-		return errors.New("nothing updated")
+		return ErrNothingChanged
 	}
 	return nil
 }
@@ -65,31 +67,9 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	if cnt, _ := res.RowsAffected(); cnt != 1 {
-		return errors.New("nothing deleted")
+		return ErrNothingChanged
 	}
 	return nil
-}
-
-func (p *positionsRepository) GetAll2(ctx context.Context) ([]domain.Position, error) {
-	stmt := "select id, name, salary from positions;"
-	rows, err := p.db.Query(stmt)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	positions := make([]domain.Position, 0)
-	for rows.Next() {
-		position := domain.Position{}
-
-		err = rows.Scan(&position.ID, &position.Name, &position.Salary)
-		if err != nil {
-			return nil, err
-		}
-		positions = append(positions, position)
-	}
-
-	return positions, nil
 }
 
 func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) ([]domain.Position, error) {
