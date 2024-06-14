@@ -20,8 +20,8 @@ func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
 	}
 }
 
-func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.EmployeesList, error) {
-	employees, err := s.Repo.GetAll(ctx)
+func (s *EmployeeServer) GetAll(ctx context.Context, req *pb.GetAllEmployeesRequest) (*pb.EmployeesList, error) {
+	employees, err := s.Repo.GetAll(ctx, req.GetPage(), req.GetPageSize())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

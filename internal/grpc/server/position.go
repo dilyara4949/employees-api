@@ -14,8 +14,8 @@ type PositionServer struct {
 	pb.UnimplementedPositionServiceServer
 }
 
-func (s *PositionServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.PositionsList, error) {
-	positions, err := s.Repo.GetAll(ctx, 1, 1)
+func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequest) (*pb.PositionsList, error) {
+	positions, err := s.Repo.GetAll(ctx, req.GetPage(), req.GetPageSize())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
