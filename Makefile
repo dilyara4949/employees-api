@@ -42,7 +42,3 @@ create-migration:
 
 create-cont:
 	 docker run --name postgre --network mynetwork -e POSTGRES_PASSWORD=12345 -p 5432:5432 -d postgres
-
-#add-u-dock:
-#	sudo usermod -aG docker $USER
-#	newgrp docker

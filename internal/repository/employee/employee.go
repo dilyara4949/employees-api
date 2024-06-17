@@ -35,15 +35,15 @@ func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employ
 
 	stmt := "insert into employees (id, first_name, last_name, position_id, created_at) values ($1, $2, $3, $4, CURRENT_TIMESTAMP);"
 
-	if _, err := e.db.Exec(stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID); err != nil {
+	if _, err := e.db.ExecContext(ctx, stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (e *employeeRepository) Get(_ context.Context, id string) (*domain.Employee, error) {
+func (e *employeeRepository) Get(ctx context.Context, id string) (*domain.Employee, error) {
 	stmt := "select first_name, last_name, position_id from employees where id = $1;"
-	row := e.db.QueryRow(stmt, id)
+	row := e.db.QueryRowContext(ctx, stmt, id)
 
 	employee := domain.Employee{}
 	switch err := row.Scan(&employee.FirstName, &employee.LastName, &employee.PositionID); err {
@@ -57,10 +57,10 @@ func (e *employeeRepository) Get(_ context.Context, id string) (*domain.Employee
 	}
 }
 
-func (e *employeeRepository) Update(_ context.Context, employee domain.Employee) error {
+func (e *employeeRepository) Update(ctx context.Context, employee domain.Employee) error {
 	stmt := "update employees set first_name = $2, last_name = $3, position_id = $4, updated_at = CURRENT_TIMESTAMP where id = $1;"
 
-	res, err := e.db.Exec(stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID)
+	res, err := e.db.ExecContext(ctx, stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID)
 	if err != nil {
 		return err
 	}
@@ -71,10 +71,10 @@ func (e *employeeRepository) Update(_ context.Context, employee domain.Employee)
 	return nil
 }
 
-func (e *employeeRepository) Delete(_ context.Context, id string) error {
+func (e *employeeRepository) Delete(ctx context.Context, id string) error {
 	stmt := "delete from employees where id = $1"
 
-	res, err := e.db.Exec(stmt, id)
+	res, err := e.db.ExecContext(ctx, stmt, id)
 	if err != nil {
 		return err
 	}
@@ -85,12 +85,12 @@ func (e *employeeRepository) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-func (e *employeeRepository) GetAll(_ context.Context, page, pageSize int64) ([]domain.Employee, error) {
+func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) ([]domain.Employee, error) {
 
 	offset := (page - 1) * pageSize
 
 	stmt := "select id, first_name, last_name, position_id from employees limit $1 offset $2;"
-	rows, err := e.db.Query(stmt, pageSize, offset)
+	rows, err := e.db.QueryContext(ctx, stmt, pageSize, offset)
 	if err != nil {
 		return nil, err
 	}

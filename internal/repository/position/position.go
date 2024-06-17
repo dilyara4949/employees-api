@@ -22,7 +22,7 @@ var (
 
 func (p *positionsRepository) Create(ctx context.Context, position *domain.Position) error {
 	stmt := "insert into positions (id, name, salary, created_at) values ($1, $2, $3, CURRENT_TIMESTAMP);"
-	if _, err := p.db.Exec(stmt, position.ID, position.Name, position.Salary); err != nil {
+	if _, err := p.db.ExecContext(ctx, stmt, position.ID, position.Name, position.Salary); err != nil {
 		return err
 	}
 	return nil
@@ -30,7 +30,7 @@ func (p *positionsRepository) Create(ctx context.Context, position *domain.Posit
 
 func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Position, error) {
 	stmt := "select name, salary from positions where id = $1;"
-	row := p.db.QueryRow(stmt, id)
+	row := p.db.QueryRowContext(ctx, stmt, id)
 	position := domain.Position{}
 
 	switch err := row.Scan(&position.Name, &position.Salary); err {
@@ -47,7 +47,7 @@ func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Posit
 func (p *positionsRepository) Update(ctx context.Context, position domain.Position) error {
 	stmt := "update positions set name = $2, salary = $3, updated_at = CURRENT_TIMESTAMP where id = $1;"
 
-	res, err := p.db.Exec(stmt, position.ID, position.Name, position.Salary)
+	res, err := p.db.ExecContext(ctx, stmt, position.ID, position.Name, position.Salary)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (p *positionsRepository) Update(ctx context.Context, position domain.Positi
 func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 	stmt := "delete from positions where id = $1"
 
-	res, err := p.db.Exec(stmt, id)
+	res, err := p.db.ExecContext(ctx, stmt, id)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) 
 	offset := (page - 1) * pageSize
 
 	stmt := "select id, name, salary from positions limit $1 offset $2;"
-	rows, err := p.db.Query(stmt, pageSize, offset)
+	rows, err := p.db.QueryContext(ctx, stmt, pageSize, offset)
 	if err != nil {
 		return nil, err
 	}

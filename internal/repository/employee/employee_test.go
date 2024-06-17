@@ -9,6 +9,7 @@ import (
 	"github.com/dilyara4949/employees-api/internal/repository/position"
 	"log"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -74,6 +75,31 @@ func InitData(posRepo domain.PositionsRepository, empRepo domain.EmployeesReposi
 	}
 	for _, e := range employees {
 		_ = empRepo.Create(context.Background(), &e)
+	}
+}
+
+func TestData(t *testing.T) {
+	SetEnv(t)
+	config, err := conf.NewConfig()
+	if err != nil {
+		log.Fatalf("Error while getting config: %s", err)
+	}
+
+	db, err := database.ConnectPostgres(config)
+	if err != nil {
+		log.Fatalf("Connection to database failed: %s", err)
+	}
+	defer db.Close()
+
+	positionRepo := position.NewPositionsRepository(db)
+	employeeRepo := NewEmployeesRepository(db, positionRepo)
+
+	for i := 0; i < 10000; i++ {
+		employee := domain.Employee{ID: strconv.Itoa(i), FirstName: strconv.Itoa(i), LastName: strconv.Itoa(i), PositionID: "1"}
+		err := employeeRepo.Create(context.Background(), &employee)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
