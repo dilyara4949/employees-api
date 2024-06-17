@@ -59,7 +59,7 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var employee domain.Employee
+	var employee *domain.Employee
 	if err := json.Unmarshal(body, &employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -67,7 +67,8 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 
 	employee.ID = uuid.New().String()
 
-	if err = c.Repo.Create(r.Context(), &employee); err != nil {
+	employee, err = c.Repo.Create(r.Context(), *employee)
+	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating employee", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -147,17 +148,8 @@ func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	page, err := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "page format is incorrect", Status: http.StatusBadGateway, Cause: err})
-		return
-	}
-
-	pageSize, err := strconv.ParseInt(r.URL.Query().Get("size"), 10, 32)
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "page size format is incorrect", Status: http.StatusBadGateway, Cause: err})
-		return
-	}
+	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
+	pageSize, _ := strconv.ParseInt(r.URL.Query().Get("size"), 10, 64)
 
 	if page <= 0 || pageSize <= 0 {
 		page = pageDefault
@@ -166,7 +158,7 @@ func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 
 	employees, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at get all employees", Status: http.StatusInternalServerError, Cause: err})
+		errorHandler(w, r, &HTTPError{Detail: "error at getting all employees", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 

@@ -29,20 +29,20 @@ var (
 	ErrNothingChanged   = errors.New("nothing changed")
 )
 
-func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employee) error {
+func (e *employeeRepository) Create(ctx context.Context, employee domain.Employee) (*domain.Employee, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if _, err := e.positionsRepo.Get(ctx, employee.PositionID); err != nil {
-		return err
+		return nil, err
 	}
 
 	stmt := "insert into employees (id, first_name, last_name, position_id, created_at) values ($1, $2, $3, $4, CURRENT_TIMESTAMP);"
 
 	if _, err := e.db.ExecContext(ctx, stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &employee, nil
 }
 
 func (e *employeeRepository) Get(ctx context.Context, id string) (*domain.Employee, error) {

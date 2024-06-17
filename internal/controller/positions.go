@@ -54,7 +54,7 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var position domain.Position
+	var position *domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
@@ -62,7 +62,7 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 
 	position.ID = uuid.New().String()
 
-	if err = c.Repo.Create(r.Context(), &position); err != nil {
+	if position, err = c.Repo.Create(r.Context(), *position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -142,17 +142,8 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	page, err := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "page format is incorrect", Status: http.StatusBadGateway, Cause: err})
-		return
-	}
-
-	pageSize, err := strconv.ParseInt(r.URL.Query().Get("size"), 10, 32)
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "page size format is incorrect", Status: http.StatusBadGateway, Cause: err})
-		return
-	}
+	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
+	pageSize, _ := strconv.ParseInt(r.URL.Query().Get("size"), 10, 64)
 
 	if page <= 0 || pageSize <= 0 {
 		page = pageDefault
@@ -161,7 +152,7 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 
 	positions, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError, Cause: err})
+		errorHandler(w, r, &HTTPError{Detail: "error at getting all positions", Status: http.StatusInternalServerError, Cause: err})
 	}
 
 	response, err := json.Marshal(positions)

@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package position
 
 import (
@@ -10,22 +13,22 @@ import (
 	"testing"
 )
 
-func SetEnv(t *testing.T) {
-	cfg := map[string]string{
-		"JWT_TOKEN_SECRET": "my_secret_key",
-		"REST_PORT":        "8080",
-		"GRPC_PORT":        "50052",
-		"ADDRESS":          "0.0.0.0",
-		"DB_HOST":          "localhost",
-		"DB_PORT":          "5432",
-		"DB_USER":          "postgres",
-		"DB_PASSWORD":      "12345",
-		"DB_NAME":          "testpostgres",
-	}
-	for key, value := range cfg {
-		t.Setenv(key, value)
-	}
-}
+//func SetEnv(t *testing.T) {
+//	cfg := map[string]string{
+//		"JWT_TOKEN_SECRET": "my_secret_key",
+//		"REST_PORT":        "8080",
+//		"GRPC_PORT":        "50052",
+//		"ADDRESS":          "0.0.0.0",
+//		"DB_HOST":          "localhost",
+//		"DB_PORT":          "5432",
+//		"DB_USER":          "postgres",
+//		"DB_PASSWORD":      "12345",
+//		"DB_NAME":          "testpostgres",
+//	}
+//	for key, value := range cfg {
+//		t.Setenv(key, value)
+//	}
+//}
 
 func InitData(posRepo domain.PositionsRepository) {
 	positions := []domain.Position{
@@ -47,7 +50,7 @@ func InitData(posRepo domain.PositionsRepository) {
 	}
 
 	for _, p := range positions {
-		_ = posRepo.Create(context.Background(), &p)
+		_, _ = posRepo.Create(context.Background(), p)
 	}
 }
 
@@ -75,13 +78,13 @@ func DeleteData(posRepo domain.PositionsRepository) {
 }
 
 func TestPositionRepository_Create(t *testing.T) {
-	SetEnv(t)
+	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -118,9 +121,13 @@ func TestPositionRepository_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := positionRepo.Create(context.Background(), &tt.position)
+			pos, err := positionRepo.Create(context.Background(), tt.position)
 			if (err != nil) != tt.expectedErr {
 				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+			}
+
+			if pos != nil && !reflect.DeepEqual(*pos, tt.position) {
+				t.Errorf("expected: %v, got: %v", tt.position, &pos)
 			}
 
 			_ = positionRepo.Delete(context.Background(), tt.position.ID)
@@ -129,13 +136,13 @@ func TestPositionRepository_Create(t *testing.T) {
 }
 
 func TestPositionRepository_Get(t *testing.T) {
-	SetEnv(t)
+	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -186,13 +193,13 @@ func TestPositionRepository_Get(t *testing.T) {
 }
 
 func TestPositionRepository_Update(t *testing.T) {
-	SetEnv(t)
+	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -238,13 +245,13 @@ func TestPositionRepository_Update(t *testing.T) {
 }
 
 func TestPositionRepository_Delete(t *testing.T) {
-	SetEnv(t)
+	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -286,13 +293,13 @@ func TestPositionRepository_Delete(t *testing.T) {
 }
 
 func TestPositionRepository_GetAll(t *testing.T) {
-	SetEnv(t)
+	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}

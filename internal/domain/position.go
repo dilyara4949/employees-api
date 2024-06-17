@@ -9,7 +9,7 @@ type Position struct {
 }
 
 type PositionsRepository interface {
-	Create(ctx context.Context, pos *Position) error
+	Create(ctx context.Context, pos Position) (*Position, error)
 	Get(ctx context.Context, id string) (*Position, error)
 	Update(ctx context.Context, pos Position) error
 	Delete(ctx context.Context, id string) error

@@ -22,10 +22,6 @@ func (e *HTTPError) Error() string {
 func errorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	if err != nil {
 		correlationId := r.Context().Value(middleware.CorrelationID)
-		if correlationId == nil {
-			log.Println("Correlation id set incorrect")
-			http.Error(w, "internal server error: Correlation id set incorrect", http.StatusInternalServerError)
-		}
 
 		log.Printf("HTTP error at %v: %v, correlationID=%v", r.URL, err, correlationId)
 

@@ -116,5 +116,5 @@ fabric.properties
 .history
 .ionide
 
-.env
+local.env
 

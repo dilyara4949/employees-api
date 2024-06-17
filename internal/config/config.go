@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -19,6 +20,8 @@ type DB struct {
 	User     string
 	Password string
 	Name     string
+	Timeout  int
+	MaxConn  int
 }
 
 var (
@@ -76,6 +79,26 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errors.New("DB_NAME is empty"))
 	}
 
+	DbTimeoutStr := os.Getenv("DB_TIMEOUT")
+	if DbTimeoutStr == "" {
+		errs = append(errs, errors.New("DB_TIMEOUT is empty"))
+	}
+
+	DbTimeout, err := strconv.Atoi(DbTimeoutStr)
+	if err != nil {
+		errs = append(errs, errors.New("DB_TIMEOUT must be an integer"))
+	}
+
+	DbMaxConnStr := os.Getenv("DB_MAX_CONNECTIONS")
+	if DbMaxConnStr == "" {
+		errs = append(errs, errors.New("DB_MAX_CONNECTIONS is empty"))
+	}
+
+	DbMaxconn, err := strconv.Atoi(DbMaxConnStr)
+	if err != nil {
+		errs = append(errs, errors.New("DB_MAX_CONNECTIONS must be an integer"))
+	}
+
 	if err := errors.Join(errs...); err != nil {
 		return Config{}, err
 	}
@@ -91,5 +114,7 @@ func NewConfig() (Config, error) {
 			DbUser,
 			DbPassword,
 			DbName,
+			DbTimeout,
+			DbMaxconn,
 		}}, nil
 }

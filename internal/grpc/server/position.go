@@ -60,7 +60,7 @@ func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Posi
 
 	position := protoToPosition(pos)
 
-	err := s.Repo.Create(ctx, position)
+	position, err := s.Repo.Create(ctx, *position)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

@@ -1,10 +1,12 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/dilyara4949/employees-api/internal/config"
 	_ "github.com/lib/pq"
+	"time"
 )
 
 func ConnectPostgres(cfg config.DB) (*sql.DB, error) {
@@ -15,7 +17,12 @@ func ConnectPostgres(cfg config.DB) (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = db.Ping()
+	db.SetMaxOpenConns(cfg.MaxConn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -65,7 +65,7 @@ func (s *EmployeeServer) Create(ctx context.Context, emp *pb.Employee) (*pb.Empl
 
 	employee := protoToEmployee(emp)
 
-	err := s.Repo.Create(ctx, employee)
+	employee, err := s.Repo.Create(ctx, *employee)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

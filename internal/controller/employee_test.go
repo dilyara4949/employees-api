@@ -17,12 +17,17 @@ type empRepoMock struct {
 	err error
 }
 
-func (e empRepoMock) Create(_ context.Context, employee *domain.Employee) error {
+func (e empRepoMock) Create(_ context.Context, employee domain.Employee) (*domain.Employee, error) {
 	if e.err != nil {
-		return e.err
+		return nil, e.err
 	}
 
-	return nil
+	return &domain.Employee{
+		ID:         "id",
+		FirstName:  "first name",
+		LastName:   "last name",
+		PositionID: "position id",
+	}, nil
 }
 
 func (e empRepoMock) Get(_ context.Context, id string) (*domain.Employee, error) {
@@ -82,7 +87,7 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 		},
 		"err": {
 			id:       "err",
-			expected: "internal server error: Correlation id set incorrect\nerror getting employee\n",
+			expected: "error getting employee\n",
 			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}
@@ -132,12 +137,12 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 		},
 		"Empty body": {
 			body:     "",
-			expected: "internal server error: Correlation id set incorrect\ninvalid request body\n",
+			expected: "invalid request body\n",
 			repo:     empRepoMock{},
 		},
 		"err": {
 			body:     "{\"id\":\"err\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
-			expected: "internal server error: Correlation id set incorrect\nerror creating employee\n",
+			expected: "error creating employee\n",
 			repo:     empRepoMock{err: errors.New("error")},
 		},
 	}

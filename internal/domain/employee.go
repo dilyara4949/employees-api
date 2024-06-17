@@ -10,7 +10,7 @@ type Employee struct {
 }
 
 type EmployeesRepository interface {
-	Create(ctx context.Context, emp *Employee) error
+	Create(ctx context.Context, emp Employee) (*Employee, error)
 	Get(ctx context.Context, id string) (*Employee, error)
 	Update(ctx context.Context, emp Employee) error
 	Delete(ctx context.Context, id string) error

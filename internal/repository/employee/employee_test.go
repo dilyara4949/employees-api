@@ -9,26 +9,8 @@ import (
 	"github.com/dilyara4949/employees-api/internal/repository/position"
 	"log"
 	"reflect"
-	"strconv"
 	"testing"
 )
-
-func SetEnv(t *testing.T) {
-	cfg := map[string]string{
-		"JWT_TOKEN_SECRET": "my_secret_key",
-		"REST_PORT":        "8080",
-		"GRPC_PORT":        "50052",
-		"ADDRESS":          "0.0.0.0",
-		"DB_HOST":          "localhost",
-		"DB_PORT":          "5432",
-		"DB_USER":          "postgres",
-		"DB_PASSWORD":      "12345",
-		"DB_NAME":          "testpostgres",
-	}
-	for key, value := range cfg {
-		t.Setenv(key, value)
-	}
-}
 
 func InitData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
 	positions := []domain.Position{
@@ -71,37 +53,37 @@ func InitData(posRepo domain.PositionsRepository, empRepo domain.EmployeesReposi
 	}
 
 	for _, p := range positions {
-		_ = posRepo.Create(context.Background(), &p)
+		_, _ = posRepo.Create(context.Background(), p)
 	}
 	for _, e := range employees {
-		_ = empRepo.Create(context.Background(), &e)
+		_, _ = empRepo.Create(context.Background(), e)
 	}
 }
 
-func TestData(t *testing.T) {
-	SetEnv(t)
-	config, err := conf.NewConfig()
-	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
-	}
-
-	db, err := database.ConnectPostgres(config)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db, positionRepo)
-
-	for i := 0; i < 10000; i++ {
-		employee := domain.Employee{ID: strconv.Itoa(i), FirstName: strconv.Itoa(i), LastName: strconv.Itoa(i), PositionID: "1"}
-		err := employeeRepo.Create(context.Background(), &employee)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-}
+//func TestData(t *testing.T) {
+//	/
+//	config, err := conf.NewConfig()
+//	if err != nil {
+//		log.Fatalf("Error while getting config: %s", err)
+//	}
+//
+//	db, err := database.ConnectPostgres(config.DB)
+//	if err != nil {
+//		log.Fatalf("Connection to database failed: %s", err)
+//	}
+//	defer db.Close()
+//
+//	positionRepo := position.NewPositionsRepository(db)
+//	employeeRepo := NewEmployeesRepository(db, positionRepo)
+//
+//	for i := 0; i < 10000; i++ {
+//		employee := domain.Employee{ID: strconv.Itoa(i), FirstName: strconv.Itoa(i), LastName: strconv.Itoa(i), PositionID: "1"}
+//		err := employeeRepo.Create(context.Background(), &employee)
+//		if err != nil {
+//			log.Println(err)
+//		}
+//	}
+//}
 
 func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
 	positions := []domain.Position{
@@ -153,13 +135,13 @@ func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepo
 }
 
 func TestEmployeeRepository_Create(t *testing.T) {
-	SetEnv(t)
+	//SetenvEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -211,10 +193,14 @@ func TestEmployeeRepository_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := employeeRepo.Create(context.Background(), &tt.employee)
+			emp, err := employeeRepo.Create(context.Background(), tt.employee)
 			fmt.Println(err)
 			if (err != nil) != tt.expectedErr {
 				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+			}
+
+			if emp != nil && !reflect.DeepEqual(*emp, tt.employee) {
+				t.Errorf("expected: %v, got: %v", tt.employee, &emp)
 			}
 
 			_ = employeeRepo.Delete(context.Background(), tt.employee.ID)
@@ -223,13 +209,12 @@ func TestEmployeeRepository_Create(t *testing.T) {
 }
 
 func TestEmployeeRepository_Get(t *testing.T) {
-	SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -283,13 +268,12 @@ func TestEmployeeRepository_Get(t *testing.T) {
 }
 
 func TestEmployeeRepository_Update(t *testing.T) {
-	SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -338,13 +322,12 @@ func TestEmployeeRepository_Update(t *testing.T) {
 }
 
 func TestEmployeeRepository_Delete(t *testing.T) {
-	SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -387,13 +370,12 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 }
 
 func TestEmployeeRepository_GetAll(t *testing.T) {
-	SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
