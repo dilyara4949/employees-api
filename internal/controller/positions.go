@@ -154,6 +154,11 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	if page <= 0 || pageSize <= 0 {
+		page = pageDefault
+		pageSize = pageSizeDefault
+	}
+
 	positions, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError, Cause: err})

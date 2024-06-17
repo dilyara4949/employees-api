@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config)
+	db, err := database.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}

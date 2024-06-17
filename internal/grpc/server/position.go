@@ -19,7 +19,8 @@ func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequ
 	pageSize := req.GetPageSize()
 
 	if page <= 0 || pageSize <= 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "page and page size cannot be less than 1")
+		page = pageDefault
+		pageSize = pageSizeDefault
 	}
 
 	positions, err := s.Repo.GetAll(ctx, page, pageSize)

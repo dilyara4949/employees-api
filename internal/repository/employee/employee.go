@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"time"
 )
 
 type PositionsRepository interface {
@@ -29,6 +30,9 @@ var (
 )
 
 func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employee) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	if _, err := e.positionsRepo.Get(ctx, employee.PositionID); err != nil {
 		return err
 	}
@@ -42,22 +46,30 @@ func (e *employeeRepository) Create(ctx context.Context, employee *domain.Employ
 }
 
 func (e *employeeRepository) Get(ctx context.Context, id string) (*domain.Employee, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "select first_name, last_name, position_id from employees where id = $1;"
 	row := e.db.QueryRowContext(ctx, stmt, id)
 
 	employee := domain.Employee{}
-	switch err := row.Scan(&employee.FirstName, &employee.LastName, &employee.PositionID); err {
-	case sql.ErrNoRows:
-		return nil, ErrEmployeeNotFound
-	case nil:
-		employee.ID = id
-		return &employee, nil
-	default:
+
+	err := row.Scan(&employee.FirstName, &employee.LastName, &employee.PositionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrEmployeeNotFound
+		}
 		return nil, err
 	}
+
+	employee.ID = id
+	return &employee, nil
 }
 
 func (e *employeeRepository) Update(ctx context.Context, employee domain.Employee) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "update employees set first_name = $2, last_name = $3, position_id = $4, updated_at = CURRENT_TIMESTAMP where id = $1;"
 
 	res, err := e.db.ExecContext(ctx, stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID)
@@ -72,6 +84,9 @@ func (e *employeeRepository) Update(ctx context.Context, employee domain.Employe
 }
 
 func (e *employeeRepository) Delete(ctx context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "delete from employees where id = $1"
 
 	res, err := e.db.ExecContext(ctx, stmt, id)
@@ -86,6 +101,8 @@ func (e *employeeRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) ([]domain.Employee, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	offset := (page - 1) * pageSize
 

@@ -10,11 +10,15 @@ type Config struct {
 	RestPort       string
 	GrpcPort       string
 	Address        string
-	DbHost         string
-	DbPort         string
-	DbUser         string
-	DbPassword     string
-	DbName         string
+	DB
+}
+
+type DB struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
 }
 
 var (
@@ -47,28 +51,28 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errors.New("ADDRESS is empty"))
 	}
 
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
+	DbHost := os.Getenv("DB_HOST")
+	if DbHost == "" {
 		errs = append(errs, errors.New("DB_HOST is empty"))
 	}
 
-	dbPort := os.Getenv("DB_PORT")
-	if dbPort == "" {
+	DbPort := os.Getenv("DB_PORT")
+	if DbPort == "" {
 		errs = append(errs, errors.New("DB_PORT is empty"))
 	}
 
-	dbUser := os.Getenv("DB_USER")
-	if dbUser == "" {
+	DbUser := os.Getenv("DB_USER")
+	if DbUser == "" {
 		errs = append(errs, errors.New("DB_USER is empty"))
 	}
 
-	dbPassword := os.Getenv("DB_PASSWORD")
-	if dbPassword == "" {
+	DbPassword := os.Getenv("DB_PASSWORD")
+	if DbPassword == "" {
 		errs = append(errs, errors.New("DB_PASSWORD is empty"))
 	}
 
-	dbName := os.Getenv("DB_NAME")
-	if dbName == "" {
+	DbName := os.Getenv("DB_NAME")
+	if DbName == "" {
 		errs = append(errs, errors.New("DB_NAME is empty"))
 	}
 
@@ -81,9 +85,11 @@ func NewConfig() (Config, error) {
 		restPort,
 		grpcPort,
 		address,
-		dbHost,
-		dbPort,
-		dbUser,
-		dbPassword,
-		dbName}, nil
+		DB{
+			DbHost,
+			DbPort,
+			DbUser,
+			DbPassword,
+			DbName,
+		}}, nil
 }

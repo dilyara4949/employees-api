@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"time"
 )
 
 type positionsRepository struct {
@@ -21,6 +22,9 @@ var (
 )
 
 func (p *positionsRepository) Create(ctx context.Context, position *domain.Position) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "insert into positions (id, name, salary, created_at) values ($1, $2, $3, CURRENT_TIMESTAMP);"
 	if _, err := p.db.ExecContext(ctx, stmt, position.ID, position.Name, position.Salary); err != nil {
 		return err
@@ -29,22 +33,29 @@ func (p *positionsRepository) Create(ctx context.Context, position *domain.Posit
 }
 
 func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Position, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "select name, salary from positions where id = $1;"
 	row := p.db.QueryRowContext(ctx, stmt, id)
 	position := domain.Position{}
 
-	switch err := row.Scan(&position.Name, &position.Salary); err {
-	case sql.ErrNoRows:
-		return nil, ErrPositionNotFound
-	case nil:
-		position.ID = id
-		return &position, nil
-	default:
+	err := row.Scan(&position.Name, &position.Salary)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrPositionNotFound
+		}
 		return nil, err
 	}
+
+	position.ID = id
+	return &position, nil
 }
 
 func (p *positionsRepository) Update(ctx context.Context, position domain.Position) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "update positions set name = $2, salary = $3, updated_at = CURRENT_TIMESTAMP where id = $1;"
 
 	res, err := p.db.ExecContext(ctx, stmt, position.ID, position.Name, position.Salary)
@@ -59,6 +70,9 @@ func (p *positionsRepository) Update(ctx context.Context, position domain.Positi
 }
 
 func (p *positionsRepository) Delete(ctx context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	stmt := "delete from positions where id = $1"
 
 	res, err := p.db.ExecContext(ctx, stmt, id)
@@ -73,6 +87,9 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) ([]domain.Position, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	offset := (page - 1) * pageSize
 
 	stmt := "select id, name, salary from positions limit $1 offset $2;"

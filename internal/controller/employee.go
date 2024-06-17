@@ -13,6 +13,11 @@ type EmployeesController struct {
 	Repo domain.EmployeesRepository
 }
 
+const (
+	pageDefault     = 1
+	pageSizeDefault = 50
+)
+
 func NewEmployeesController(repo domain.EmployeesRepository) *EmployeesController {
 	return &EmployeesController{repo}
 }
@@ -155,8 +160,8 @@ func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 	}
 
 	if page <= 0 || pageSize <= 0 {
-		errorHandler(w, r, &HTTPError{Detail: "page and page size cannot be less than 1", Status: http.StatusBadGateway, Cause: err})
-		return
+		page = pageDefault
+		pageSize = pageSizeDefault
 	}
 
 	employees, err := c.Repo.GetAll(r.Context(), page, pageSize)
