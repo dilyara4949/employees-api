@@ -14,7 +14,3 @@ CREATE TABLE employees (
                            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                            updated_at TIMESTAMPTZ
 );
-
-CREATE INDEX idx_employees_first_name ON employees(first_name);
-CREATE INDEX idx_employees_last_name ON employees(last_name);
-CREATE INDEX idx_employees_first_last_name ON employees(first_name, last_name);
