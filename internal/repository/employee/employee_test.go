@@ -60,31 +60,6 @@ func InitData(posRepo domain.PositionsRepository, empRepo domain.EmployeesReposi
 	}
 }
 
-//func TestData(t *testing.T) {
-//	/
-//	config, err := conf.NewConfig()
-//	if err != nil {
-//		log.Fatalf("Error while getting config: %s", err)
-//	}
-//
-//	db, err := database.ConnectPostgres(config.DB)
-//	if err != nil {
-//		log.Fatalf("Connection to database failed: %s", err)
-//	}
-//	defer db.Close()
-//
-//	positionRepo := position.NewPositionsRepository(db)
-//	employeeRepo := NewEmployeesRepository(db, positionRepo)
-//
-//	for i := 0; i < 10000; i++ {
-//		employee := domain.Employee{ID: strconv.Itoa(i), FirstName: strconv.Itoa(i), LastName: strconv.Itoa(i), PositionID: "1"}
-//		err := employeeRepo.Create(context.Background(), &employee)
-//		if err != nil {
-//			log.Println(err)
-//		}
-//	}
-//}
-
 func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
 	positions := []domain.Position{
 		{

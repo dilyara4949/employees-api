@@ -13,23 +13,6 @@ import (
 	"testing"
 )
 
-//func SetEnv(t *testing.T) {
-//	cfg := map[string]string{
-//		"JWT_TOKEN_SECRET": "my_secret_key",
-//		"REST_PORT":        "8080",
-//		"GRPC_PORT":        "50052",
-//		"ADDRESS":          "0.0.0.0",
-//		"DB_HOST":          "localhost",
-//		"DB_PORT":          "5432",
-//		"DB_USER":          "postgres",
-//		"DB_PASSWORD":      "12345",
-//		"DB_NAME":          "testpostgres",
-//	}
-//	for key, value := range cfg {
-//		t.Setenv(key, value)
-//	}
-//}
-
 func InitData(posRepo domain.PositionsRepository) {
 	positions := []domain.Position{
 		{
@@ -78,7 +61,6 @@ func DeleteData(posRepo domain.PositionsRepository) {
 }
 
 func TestPositionRepository_Create(t *testing.T) {
-	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
@@ -136,7 +118,6 @@ func TestPositionRepository_Create(t *testing.T) {
 }
 
 func TestPositionRepository_Get(t *testing.T) {
-	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
@@ -193,7 +174,6 @@ func TestPositionRepository_Get(t *testing.T) {
 }
 
 func TestPositionRepository_Update(t *testing.T) {
-	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
@@ -245,7 +225,6 @@ func TestPositionRepository_Update(t *testing.T) {
 }
 
 func TestPositionRepository_Delete(t *testing.T) {
-	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
@@ -293,7 +272,6 @@ func TestPositionRepository_Delete(t *testing.T) {
 }
 
 func TestPositionRepository_GetAll(t *testing.T) {
-	//SetEnv(t)
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
