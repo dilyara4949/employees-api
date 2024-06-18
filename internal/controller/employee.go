@@ -29,6 +29,11 @@ func (c *EmployeesController) GetEmployee(w http.ResponseWriter, r *http.Request
 	}
 
 	employeeID := r.PathValue("id")
+	if employeeID == "" {
+		errorHandler(w, r, &HTTPError{Detail: "error getting employee: id is incorrect", Status: http.StatusInternalServerError})
+		return
+	}
+
 	employee, err := c.Repo.Get(r.Context(), employeeID)
 
 	if err != nil {
@@ -91,6 +96,11 @@ func (c *EmployeesController) DeleteEmployee(w http.ResponseWriter, r *http.Requ
 	}
 
 	employeeID := r.PathValue("id")
+	if employeeID == "" {
+		errorHandler(w, r, &HTTPError{Detail: "error deleting employee: id is incorrect", Status: http.StatusInternalServerError})
+		return
+	}
+
 	err := c.Repo.Delete(r.Context(), employeeID)
 
 	if err != nil {
@@ -109,7 +119,7 @@ func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Requ
 
 	employeeID := r.PathValue("id")
 	if employeeID == "" {
-		errorHandler(w, r, &HTTPError{Detail: "missing employee ID", Status: http.StatusBadRequest})
+		errorHandler(w, r, &HTTPError{Detail: "error updating employee: id is incorrect", Status: http.StatusInternalServerError})
 		return
 	}
 
