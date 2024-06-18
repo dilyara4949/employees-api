@@ -28,13 +28,13 @@ migrate-up:
 	migrate -database $(DB_URL) -path internal/database/migrations up
 
 migrate-down:
-	migrate -database $(DB_URL) -path internal/database/migrations down
+	migrate -database $(DB_URL) -path internal/database/postgres/migrations down
 
 migrate-test-up:
-	migrate -database $(TEST_DB_URL) -path internal/database/migrations up
+	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations up
 
 migrate-test-down:
-	migrate -database $(TEST_DB_URL) -path internal/database/migrations down
+	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations down
 
 create-migration:
 	@read -p "migration name: " name; \

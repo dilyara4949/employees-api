@@ -9,6 +9,7 @@ require (
 
 require (
 	github.com/lib/pq v1.10.9 // indirect
+	go.mongodb.org/mongo-driver v1.15.1 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

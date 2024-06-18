@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	conf "github.com/dilyara4949/employees-api/internal/config"
-	"github.com/dilyara4949/employees-api/internal/database"
+	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/dilyara4949/employees-api/internal/repository/position"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
 	"reflect"
 	"testing"
@@ -116,7 +116,7 @@ func TestEmployeeRepository_Create(t *testing.T) {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
+	db, err := postgres.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -189,7 +189,7 @@ func TestEmployeeRepository_Get(t *testing.T) {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
+	db, err := postgres.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -248,7 +248,7 @@ func TestEmployeeRepository_Update(t *testing.T) {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
+	db, err := postgres.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -302,7 +302,7 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
+	db, err := postgres.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
@@ -350,7 +350,7 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
+	db, err := postgres.ConnectPostgres(config.DB)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}

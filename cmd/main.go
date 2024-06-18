@@ -2,8 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/dilyara4949/employees-api/internal/database"
+	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
+	"github.com/dilyara4949/employees-api/internal/database/postgres"
+	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
+	//mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
+	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -13,9 +19,12 @@ import (
 
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/controller"
-	"github.com/dilyara4949/employees-api/internal/repository/employee"
-	"github.com/dilyara4949/employees-api/internal/repository/position"
 	"github.com/dilyara4949/employees-api/internal/route"
+)
+
+var (
+	posCollection = "positions"
+	empCollection = "employees"
 )
 
 func main() {
@@ -25,16 +34,36 @@ func main() {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
+	var positionRepo domain.PositionsRepository
+	var employeeRepo domain.EmployeesRepository
+
+	switch config.DB.Name {
+	case "postgres":
+		db, err := postgres.ConnectPostgres(config.DB)
+		if err != nil {
+			log.Fatalf("Connection to database failed: %s", err)
+		}
+		defer db.Close()
+
+		positionRepo = position.NewPositionsRepository(db)
+		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
+
+	case "mongo":
+		db, err := mongoDB.ConnectMongo(config.DB)
+		if err != nil {
+			log.Fatalf("Connection to database failed: %s", err)
+		}
+		positionCollection := db.Collection(posCollection)
+		//employeeCollection := db.Database(config.DB.Name).Collection(empCollection)
+
+		positionRepo = mongoposition.NewPositionsRepository(positionCollection)
+		//employeeRepo = mongoemployee.NewEmployeesRepository(employeeCollection, positionRepo)
+
+	default:
+		log.Fatalf("%s is unknown database", config.DB.Name)
 	}
-	defer db.Close()
 
 	log.Println("Successfully connected to database")
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	go func() {
 		positionServer := server.NewPositionServer(positionRepo)
