@@ -25,9 +25,17 @@ type DB struct {
 }
 
 var (
-	errMissingPort           = errors.New("PORT is empty")
+	errMissingRestPort       = errors.New("REST_PORT is empty")
 	errMissingAddress        = errors.New("ADDRESS is empty")
 	errMissingJWTTokenSecret = errors.New("JWT_TOKEN_SECRET is empty")
+	errMissingGrpcPort       = errors.New("GRPC_PORT is empty")
+	errMissingDbHost         = errors.New("DB_HOST is empty")
+	errMissingDbPort         = errors.New("DB_PORT is empty")
+	errMissingDbName         = errors.New("DB_USER is empty")
+	errMissingDbUser         = errors.New("DB_USER is empty")
+	errMissingDbPassword     = errors.New("DB_PASSWORD is empty")
+	errMissingDbTimeout      = errors.New("DB_TIMEOUT is empty")
+	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
 )
 
 func NewConfig() (Config, error) {
@@ -36,52 +44,52 @@ func NewConfig() (Config, error) {
 
 	jwtTokenSecret := os.Getenv("JWT_TOKEN_SECRET")
 	if jwtTokenSecret == "" {
-		errs = append(errs, errors.New("JWT_TOKEN_SECRET is empty"))
+		errs = append(errs, errMissingJWTTokenSecret)
 	}
 
 	restPort := os.Getenv("REST_PORT")
 	if restPort == "" {
-		errs = append(errs, errors.New("REST_PORT is empty"))
+		errs = append(errs, errMissingRestPort)
 	}
 
 	grpcPort := os.Getenv("GRPC_PORT")
 	if grpcPort == "" {
-		errs = append(errs, errors.New("GRPC_PORT is empty"))
+		errs = append(errs, errMissingGrpcPort)
 	}
 
 	address := os.Getenv("ADDRESS")
 	if address == "" {
-		errs = append(errs, errors.New("ADDRESS is empty"))
+		errs = append(errs, errMissingAddress)
 	}
 
 	DbHost := os.Getenv("DB_HOST")
 	if DbHost == "" {
-		errs = append(errs, errors.New("DB_HOST is empty"))
+		errs = append(errs, errMissingDbHost)
 	}
 
 	DbPort := os.Getenv("DB_PORT")
 	if DbPort == "" {
-		errs = append(errs, errors.New("DB_PORT is empty"))
+		errs = append(errs, errMissingDbPort)
 	}
 
 	DbUser := os.Getenv("DB_USER")
 	if DbUser == "" {
-		errs = append(errs, errors.New("DB_USER is empty"))
+		errs = append(errs, errMissingDbUser)
 	}
 
 	DbPassword := os.Getenv("DB_PASSWORD")
 	if DbPassword == "" {
-		errs = append(errs, errors.New("DB_PASSWORD is empty"))
+		errs = append(errs, errMissingDbPassword)
 	}
 
 	DbName := os.Getenv("DB_NAME")
 	if DbName == "" {
-		errs = append(errs, errors.New("DB_NAME is empty"))
+		errs = append(errs, errMissingDbName)
 	}
 
 	DbTimeoutStr := os.Getenv("DB_TIMEOUT")
 	if DbTimeoutStr == "" {
-		errs = append(errs, errors.New("DB_TIMEOUT is empty"))
+		errs = append(errs, errMissingDbTimeout)
 	}
 
 	DbTimeout, err := strconv.Atoi(DbTimeoutStr)
@@ -91,7 +99,7 @@ func NewConfig() (Config, error) {
 
 	DbMaxConnStr := os.Getenv("DB_MAX_CONNECTIONS")
 	if DbMaxConnStr == "" {
-		errs = append(errs, errors.New("DB_MAX_CONNECTIONS is empty"))
+		errs = append(errs, errMissingDbMaxConn)
 	}
 
 	DbMaxconn, err := strconv.Atoi(DbMaxConnStr)
