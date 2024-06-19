@@ -1,4 +1,7 @@
-package employee
+//go:build integration
+// +build integration
+
+package integration
 
 import (
 	"context"
@@ -6,6 +9,7 @@ import (
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
 	"reflect"
@@ -123,7 +127,7 @@ func TestEmployeeRepository_Create(t *testing.T) {
 	defer db.Close()
 
 	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitData(positionRepo, employeeRepo)
 	defer DeleteData(positionRepo, employeeRepo)
@@ -196,7 +200,7 @@ func TestEmployeeRepository_Get(t *testing.T) {
 	defer db.Close()
 
 	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitData(positionRepo, employeeRepo)
 	defer DeleteData(positionRepo, employeeRepo)
@@ -255,7 +259,7 @@ func TestEmployeeRepository_Update(t *testing.T) {
 	defer db.Close()
 
 	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitData(positionRepo, employeeRepo)
 	defer DeleteData(positionRepo, employeeRepo)
@@ -309,7 +313,7 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 	defer db.Close()
 
 	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitData(positionRepo, employeeRepo)
 	defer DeleteData(positionRepo, employeeRepo)
@@ -357,7 +361,7 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 	defer db.Close()
 
 	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitData(positionRepo, employeeRepo)
 	defer DeleteData(positionRepo, employeeRepo)

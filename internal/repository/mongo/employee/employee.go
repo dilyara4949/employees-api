@@ -114,7 +114,9 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	findOptions := options.Find()
+	skip := (page - 1) * pageSize
+	findOptions := options.Find().SetSkip(skip).SetLimit(pageSize)
+
 	employees := make([]domain.Employee, 0)
 
 	cur, err := e.collection.Find(context.TODO(), bson.D{{}}, findOptions)

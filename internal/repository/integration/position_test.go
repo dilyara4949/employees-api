@@ -1,19 +1,29 @@
 //go:build integration
 // +build integration
 
-package position
+package integration
 
 import (
 	"context"
+	"errors"
 	conf "github.com/dilyara4949/employees-api/internal/config"
+	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
+	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
 	"reflect"
 	"testing"
 )
 
-func InitData(posRepo domain.PositionsRepository) {
+var (
+	posCollection = "positions"
+	empCollection = "employees"
+)
+
+func InitDataPositions(posRepo domain.PositionsRepository) {
 	positions := []domain.Position{
 		{
 			ID:     "1",
@@ -37,7 +47,7 @@ func InitData(posRepo domain.PositionsRepository) {
 	}
 }
 
-func DeleteData(posRepo domain.PositionsRepository) {
+func DeleteDataPositions(posRepo domain.PositionsRepository) {
 	positions := []domain.Position{
 		{
 			ID:     "1",
@@ -60,22 +70,51 @@ func DeleteData(posRepo domain.PositionsRepository) {
 	}
 }
 
-func TestPositionRepository_Create(t *testing.T) {
+func InitRepos() (domain.PositionsRepository, error) {
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
+	var positionRepo domain.PositionsRepository
+	var employeeRepo domain.EmployeesRepository
+
+	switch config.Name {
+	case "testpostgres":
+		db, err := postgres.ConnectPostgres(config.DB)
+		if err != nil {
+			log.Fatalf("Connection to database failed: %s", err)
+		}
+		defer db.Close()
+
+		positionRepo = position.NewPositionsRepository(db)
+
+	case "testmongo":
+		db, err := mongoDB.ConnectMongo(config.DB)
+		if err != nil {
+			log.Fatalf("Connection to database failed: %s", err)
+		}
+		positionCollection := db.Collection(posCollection)
+		employeeCollection := db.Collection(empCollection)
+
+		positionRepo = mongoposition.NewPositionsRepository(positionCollection)
+		employeeRepo = mongoemployee.NewEmployeesRepository(employeeCollection, positionRepo)
+		positionRepo = mongoposition.AddEmpRepo(positionCollection, employeeRepo)
+	default:
+		return nil, errors.New("Incorrect database given for tests")
 	}
-	defer db.Close()
+	return positionRepo, nil
+}
 
-	positionRepo := NewPositionsRepository(db)
+func TestPositionRepository_Create(t *testing.T) {
 
-	InitData(positionRepo)
-	defer DeleteData(positionRepo)
+	positionRepo, err := InitRepos()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	InitDataPositions(positionRepo)
+	defer DeleteDataPositions(positionRepo)
 
 	tests := []struct {
 		name        string
@@ -118,21 +157,13 @@ func TestPositionRepository_Create(t *testing.T) {
 }
 
 func TestPositionRepository_Get(t *testing.T) {
-	config, err := conf.NewConfig()
+	positionRepo, err := InitRepos()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
 
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := NewPositionsRepository(db)
-
-	InitData(positionRepo)
-	defer DeleteData(positionRepo)
+	InitDataPositions(positionRepo)
+	defer DeleteDataPositions(positionRepo)
 
 	tests := []struct {
 		name        string
@@ -174,21 +205,13 @@ func TestPositionRepository_Get(t *testing.T) {
 }
 
 func TestPositionRepository_Update(t *testing.T) {
-	config, err := conf.NewConfig()
+	positionRepo, err := InitRepos()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
 
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := NewPositionsRepository(db)
-
-	InitData(positionRepo)
-	defer DeleteData(positionRepo)
+	InitDataPositions(positionRepo)
+	defer DeleteDataPositions(positionRepo)
 
 	tests := []struct {
 		name        string
@@ -225,21 +248,13 @@ func TestPositionRepository_Update(t *testing.T) {
 }
 
 func TestPositionRepository_Delete(t *testing.T) {
-	config, err := conf.NewConfig()
+	positionRepo, err := InitRepos()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
 
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := NewPositionsRepository(db)
-
-	InitData(positionRepo)
-	defer DeleteData(positionRepo)
+	InitDataPositions(positionRepo)
+	defer DeleteDataPositions(positionRepo)
 
 	tests := []struct {
 		name        string
@@ -272,21 +287,13 @@ func TestPositionRepository_Delete(t *testing.T) {
 }
 
 func TestPositionRepository_GetAll(t *testing.T) {
-	config, err := conf.NewConfig()
+	positionRepo, err := InitRepos()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
 
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := NewPositionsRepository(db)
-
-	InitData(positionRepo)
-	defer DeleteData(positionRepo)
+	InitDataPositions(positionRepo)
+	defer DeleteDataPositions(positionRepo)
 
 	tests := []struct {
 		name     string
