@@ -2,9 +2,12 @@ package employee
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"time"
 )
 
@@ -13,13 +16,13 @@ type PositionsRepository interface {
 }
 
 type employeeRepository struct {
-	db            *sql.DB
+	collection    *mongo.Collection
 	positionsRepo PositionsRepository
 }
 
-func NewEmployeesRepository(db *sql.DB, positionsRepo PositionsRepository) domain.EmployeesRepository {
+func NewEmployeesRepository(c *mongo.Collection, positionsRepo PositionsRepository) domain.EmployeesRepository {
 	return &employeeRepository{
-		db:            db,
+		collection:    c,
 		positionsRepo: positionsRepo,
 	}
 }
@@ -37,11 +40,17 @@ func (e *employeeRepository) Create(ctx context.Context, employee domain.Employe
 		return nil, err
 	}
 
-	stmt := "insert into employees (id, first_name, last_name, position_id, created_at) values ($1, $2, $3, $4, CURRENT_TIMESTAMP);"
-
-	if _, err := e.db.ExecContext(ctx, stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID); err != nil {
+	_, err := e.collection.InsertOne(ctx, bson.M{
+		"id":          employee.ID,
+		"first_name":  employee.FirstName,
+		"last_name":   employee.LastName,
+		"position_id": employee.PositionID,
+		"created_at":  time.Now(),
+	})
+	if err != nil {
 		return nil, err
 	}
+
 	return &employee, nil
 }
 
@@ -49,20 +58,12 @@ func (e *employeeRepository) Get(ctx context.Context, id string) (*domain.Employ
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	stmt := "select first_name, last_name, position_id from employees where id = $1;"
-	row := e.db.QueryRowContext(ctx, stmt, id)
-
 	employee := domain.Employee{}
-
-	err := row.Scan(&employee.FirstName, &employee.LastName, &employee.PositionID)
+	err := e.collection.FindOne(ctx, bson.M{"id": id}).Decode(&employee)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrEmployeeNotFound
-		}
-		return nil, err
+		return nil, errors.Join(err)
 	}
 
-	employee.ID = id
 	return &employee, nil
 }
 
@@ -70,14 +71,25 @@ func (e *employeeRepository) Update(ctx context.Context, employee domain.Employe
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	stmt := "update employees set first_name = $2, last_name = $3, position_id = $4, updated_at = CURRENT_TIMESTAMP where id = $1;"
+	update := bson.M{
+		"$set": bson.M{
+			"first_name":  employee.FirstName,
+			"last_name":   employee.LastName,
+			"position_id": employee.PositionID,
+			"updated_at":  time.Now(),
+		},
+	}
 
-	res, err := e.db.ExecContext(ctx, stmt, employee.ID, employee.FirstName, employee.LastName, employee.PositionID)
+	res, err := e.collection.UpdateOne(ctx, bson.M{"id": employee.ID}, update)
 	if err != nil {
 		return err
 	}
 
-	if cnt, _ := res.RowsAffected(); cnt != 1 {
+	if res.MatchedCount == 0 {
+		return ErrEmployeeNotFound
+	}
+
+	if res.ModifiedCount == 0 {
 		return ErrNothingChanged
 	}
 	return nil
@@ -87,14 +99,12 @@ func (e *employeeRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	stmt := "delete from employees where id = $1"
-
-	res, err := e.db.ExecContext(ctx, stmt, id)
+	res, err := e.collection.DeleteOne(ctx, bson.M{"id": id})
 	if err != nil {
 		return err
 	}
 
-	if cnt, _ := res.RowsAffected(); cnt != 1 {
+	if res.DeletedCount == 0 {
 		return ErrNothingChanged
 	}
 	return nil
@@ -104,24 +114,40 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	offset := (page - 1) * pageSize
+	findOptions := options.Find()
+	employees := make([]domain.Employee, 0)
 
-	stmt := "select id, first_name, last_name, position_id from employees limit $1 offset $2;"
-	rows, err := e.db.QueryContext(ctx, stmt, pageSize, offset)
+	cur, err := e.collection.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
+		log.Fatal(err)
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		emp := domain.Employee{}
+		err := cur.Decode(&emp)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		employees = append(employees, emp)
+	}
+	if err := cur.Err(); err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	employees := make([]domain.Employee, 0)
-	for rows.Next() {
-		employee := domain.Employee{}
-
-		err = rows.Scan(&employee.ID, &employee.FirstName, &employee.LastName, &employee.PositionID)
-		if err != nil {
-			return nil, err
-		}
-		employees = append(employees, employee)
-	}
 	return employees, nil
+}
+
+func (e *employeeRepository) GetByPosition(ctx context.Context, positionId string) (*domain.Employee, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	employee := domain.Employee{}
+	err := e.collection.FindOne(ctx, bson.M{"position_id": positionId}).Decode(&employee)
+	if err != nil {
+		return nil, errors.Join(err)
+	}
+
+	return &employee, nil
 }

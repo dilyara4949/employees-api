@@ -10,8 +10,7 @@ import (
 )
 
 func ConnectMongo(cfg config.DB) (*mongo.Database, error) {
-	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
-
+	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s/?authSource=admin", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
 	clientOptions := options.Client().ApplyURI(uri)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
@@ -27,7 +26,5 @@ func ConnectMongo(cfg config.DB) (*mongo.Database, error) {
 		return nil, err
 	}
 
-	db := client.Database(cfg.Name)
-
-	return db, nil
+	return client.Database(cfg.Name), nil
 }

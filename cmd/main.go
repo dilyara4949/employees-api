@@ -8,7 +8,7 @@ import (
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 
-	//mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
+	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	pb "github.com/dilyara4949/employees-api/proto"
@@ -54,10 +54,11 @@ func main() {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
 		positionCollection := db.Collection(posCollection)
-		//employeeCollection := db.Database(config.DB.Name).Collection(empCollection)
+		employeeCollection := db.Collection(empCollection)
 
 		positionRepo = mongoposition.NewPositionsRepository(positionCollection)
-		//employeeRepo = mongoemployee.NewEmployeesRepository(employeeCollection, positionRepo)
+		employeeRepo = mongoemployee.NewEmployeesRepository(employeeCollection, positionRepo)
+		positionRepo = mongoposition.AddEmpRepo(positionCollection, employeeRepo)
 
 	default:
 		log.Fatalf("%s is unknown database", config.DB.Name)
