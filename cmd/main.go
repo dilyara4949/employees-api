@@ -6,9 +6,10 @@ import (
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
+
 	//mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
-	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
@@ -47,7 +48,6 @@ func main() {
 
 		positionRepo = position.NewPositionsRepository(db)
 		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
-
 	case "mongo":
 		db, err := mongoDB.ConnectMongo(config.DB)
 		if err != nil {
