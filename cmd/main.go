@@ -53,12 +53,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
-		positionCollection := db.Collection(posCollection)
-		employeeCollection := db.Collection(empCollection)
 
-		positionRepo = mongoposition.NewPositionsRepository(positionCollection)
-		employeeRepo = mongoemployee.NewEmployeesRepository(employeeCollection, positionRepo)
-		positionRepo = mongoposition.AddEmpRepo(positionCollection, employeeRepo)
+		positionRepo = mongoposition.NewPositionsRepository(db, config.Mongo.Collections.Positions, config.Mongo.Collections.Employees)
+		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.Mongo.Collections.Employees, config.Mongo.Collections.Positions)
 
 	default:
 		log.Fatalf("%s is unknown database", config.DB.Name)

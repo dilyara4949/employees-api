@@ -12,20 +12,19 @@ import (
 )
 
 type positionsRepository struct {
-	collection   *mongo.Collection
-	employeeRepo EmployeesRepository
+	positionCollection *mongo.Collection
+	employeeCollection *mongo.Collection
 }
 
 type EmployeesRepository interface {
 	GetByPosition(ctx context.Context, id string) (*domain.Employee, error)
 }
 
-func NewPositionsRepository(c *mongo.Collection) domain.PositionsRepository {
-	return &positionsRepository{collection: c}
-}
-
-func AddEmpRepo(c *mongo.Collection, empRepo EmployeesRepository) domain.PositionsRepository {
-	return &positionsRepository{collection: c, employeeRepo: empRepo}
+func NewPositionsRepository(db *mongo.Database, pos, emp string) domain.PositionsRepository {
+	return &positionsRepository{
+		employeeCollection: db.Collection(emp),
+		positionCollection: db.Collection(pos),
+	}
 }
 
 var (
@@ -37,7 +36,12 @@ func (p *positionsRepository) Create(ctx context.Context, position domain.Positi
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	_, err := p.collection.InsertOne(ctx, bson.M{
+	err := p.positionCollection.FindOne(ctx, bson.M{"id": position.ID}).Decode(position)
+	if err == nil {
+		return nil, errors.New("position already exists")
+	}
+
+	_, err = p.positionCollection.InsertOne(ctx, bson.M{
 		"id":         position.ID,
 		"name":       position.Name,
 		"salary":     position.Salary,
@@ -55,7 +59,7 @@ func (p *positionsRepository) Get(ctx context.Context, id string) (*domain.Posit
 
 	position := domain.Position{}
 
-	err := p.collection.FindOne(ctx, bson.M{"id": id}).Decode(&position)
+	err := p.positionCollection.FindOne(ctx, bson.M{"id": id}).Decode(&position)
 	if err != nil {
 		return nil, errors.Join(err)
 	}
@@ -75,7 +79,7 @@ func (p *positionsRepository) Update(ctx context.Context, position domain.Positi
 		},
 	}
 
-	res, err := p.collection.UpdateOne(ctx, bson.M{"id": position.ID}, update)
+	res, err := p.positionCollection.UpdateOne(ctx, bson.M{"id": position.ID}, update)
 	if err != nil {
 		return err
 	}
@@ -95,12 +99,13 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	_, err := p.employeeRepo.GetByPosition(ctx, id)
+	employee := domain.Employee{}
+	err := p.employeeCollection.FindOne(ctx, bson.M{"position_id": id}).Decode(&employee)
 	if err == nil {
 		return errors.New("position in use by employee")
 	}
 
-	res, err := p.collection.DeleteOne(ctx, bson.M{"id": id})
+	res, err := p.positionCollection.DeleteOne(ctx, bson.M{"id": id})
 	if err != nil {
 		return err
 	}
@@ -121,7 +126,7 @@ func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) 
 
 	positions := make([]domain.Position, 0)
 
-	cur, err := p.collection.Find(context.TODO(), bson.D{{}}, findOptions)
+	cur, err := p.positionCollection.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
 		log.Fatal(err)
 	}

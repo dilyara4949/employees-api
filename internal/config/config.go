@@ -12,6 +12,7 @@ type Config struct {
 	GrpcPort       string
 	Address        string
 	DB
+	Mongo
 }
 
 type DB struct {
@@ -22,6 +23,14 @@ type DB struct {
 	Name     string
 	Timeout  int
 	MaxConn  int
+}
+
+type Mongo struct {
+	Collections
+}
+type Collections struct {
+	Positions string
+	Employees string
 }
 
 var (
@@ -36,6 +45,8 @@ var (
 	errMissingDbPassword     = errors.New("DB_PASSWORD is empty")
 	errMissingDbTimeout      = errors.New("DB_TIMEOUT is empty")
 	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
+	positionsCollection      = "positions"
+	employeesCollection      = "employees"
 )
 
 func NewConfig() (Config, error) {
@@ -124,5 +135,12 @@ func NewConfig() (Config, error) {
 			DbName,
 			DbTimeout,
 			DbMaxconn,
-		}}, nil
+		},
+		Mongo{
+			Collections{
+				positionsCollection,
+				employeesCollection,
+			},
+		},
+	}, nil
 }

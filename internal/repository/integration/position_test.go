@@ -6,21 +6,16 @@ package integration
 import (
 	"context"
 	"errors"
+	"fmt"
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
-	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
 	"reflect"
 	"testing"
-)
-
-var (
-	posCollection = "positions"
-	empCollection = "employees"
 )
 
 func InitDataPositions(posRepo domain.PositionsRepository) {
@@ -70,14 +65,13 @@ func DeleteDataPositions(posRepo domain.PositionsRepository) {
 	}
 }
 
-func InitRepos() (domain.PositionsRepository, error) {
+func InitPosRepo() (domain.PositionsRepository, error) {
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
 	var positionRepo domain.PositionsRepository
-	var employeeRepo domain.EmployeesRepository
 
 	switch config.Name {
 	case "testpostgres":
@@ -85,7 +79,6 @@ func InitRepos() (domain.PositionsRepository, error) {
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
-		defer db.Close()
 
 		positionRepo = position.NewPositionsRepository(db)
 
@@ -94,12 +87,8 @@ func InitRepos() (domain.PositionsRepository, error) {
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
-		positionCollection := db.Collection(posCollection)
-		employeeCollection := db.Collection(empCollection)
 
-		positionRepo = mongoposition.NewPositionsRepository(positionCollection)
-		employeeRepo = mongoemployee.NewEmployeesRepository(employeeCollection, positionRepo)
-		positionRepo = mongoposition.AddEmpRepo(positionCollection, employeeRepo)
+		positionRepo = mongoposition.NewPositionsRepository(db, config.Mongo.Collections.Positions, config.Mongo.Collections.Employees)
 	default:
 		return nil, errors.New("Incorrect database given for tests")
 	}
@@ -108,7 +97,7 @@ func InitRepos() (domain.PositionsRepository, error) {
 
 func TestPositionRepository_Create(t *testing.T) {
 
-	positionRepo, err := InitRepos()
+	positionRepo, err := InitPosRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +146,7 @@ func TestPositionRepository_Create(t *testing.T) {
 }
 
 func TestPositionRepository_Get(t *testing.T) {
-	positionRepo, err := InitRepos()
+	positionRepo, err := InitPosRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,6 +186,8 @@ func TestPositionRepository_Get(t *testing.T) {
 				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
 			}
 
+			fmt.Println("-----------------------", tt.expectedErr, err, pos, tt.position)
+
 			if !tt.expectedErr && !reflect.DeepEqual(*pos, tt.position) {
 				t.Errorf("expected: %v, got: %v", tt.position, *pos)
 			}
@@ -205,7 +196,7 @@ func TestPositionRepository_Get(t *testing.T) {
 }
 
 func TestPositionRepository_Update(t *testing.T) {
-	positionRepo, err := InitRepos()
+	positionRepo, err := InitPosRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -248,7 +239,7 @@ func TestPositionRepository_Update(t *testing.T) {
 }
 
 func TestPositionRepository_Delete(t *testing.T) {
-	positionRepo, err := InitRepos()
+	positionRepo, err := InitPosRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -287,7 +278,7 @@ func TestPositionRepository_Delete(t *testing.T) {
 }
 
 func TestPositionRepository_GetAll(t *testing.T) {
-	positionRepo, err := InitRepos()
+	positionRepo, err := InitPosRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -319,7 +310,7 @@ func TestPositionRepository_GetAll(t *testing.T) {
 			},
 		},
 		{
-			name:     "Second page, two records",
+			name:     "Second page, one record",
 			page:     2,
 			pageSize: 2,
 			expected: []domain.Position{
@@ -340,12 +331,12 @@ func TestPositionRepository_GetAll(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			employees, err := positionRepo.GetAll(context.Background(), tt.page, tt.pageSize)
+			positions, err := positionRepo.GetAll(context.Background(), tt.page, tt.pageSize)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
-			if !reflect.DeepEqual(employees, tt.expected) {
-				t.Errorf("expected: %v, got: %v", tt.expected, employees)
+			if !reflect.DeepEqual(positions, tt.expected) {
+				t.Errorf("expected: %v, got: %v", tt.expected, positions)
 			}
 		})
 	}

@@ -1,3 +1,6 @@
+//go:build !integration
+// +build !integration
+
 package config
 
 import (
@@ -42,6 +45,12 @@ func TestNewConfig(t *testing.T) {
 					Name:     "qw",
 					Timeout:  1,
 					MaxConn:  1,
+				},
+				Mongo: Mongo{
+					Collections{
+						Positions: positionsCollection,
+						Employees: employeesCollection,
+					},
 				},
 			},
 		},

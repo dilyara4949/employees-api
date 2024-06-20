@@ -5,10 +5,14 @@ package integration
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	conf "github.com/dilyara4949/employees-api/internal/config"
+	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
+	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
@@ -16,7 +20,7 @@ import (
 	"testing"
 )
 
-func InitData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
+func InitDataEmployees(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
 	positions := []domain.Position{
 		{
 			ID:     "1",
@@ -64,7 +68,7 @@ func InitData(posRepo domain.PositionsRepository, empRepo domain.EmployeesReposi
 	}
 }
 
-func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
+func DeleteDataEmployees(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
 	positions := []domain.Position{
 		{
 			ID:     "1",
@@ -113,24 +117,47 @@ func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepo
 	}
 }
 
-func TestEmployeeRepository_Create(t *testing.T) {
-	//SetenvEnv(t)
+func initEmpRepo() (domain.EmployeesRepository, domain.PositionsRepository, error) {
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
+	var employeeRepo domain.EmployeesRepository
+	var positionRepo domain.PositionsRepository
+
+	switch config.Name {
+	case "testpostgres":
+		db, err := postgres.ConnectPostgres(config.DB)
+		if err != nil {
+			log.Fatalf("Connection to database failed: %s", err)
+		}
+
+		positionRepo = position.NewPositionsRepository(db)
+		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
+
+	case "testmongo":
+		db, err := mongoDB.ConnectMongo(config.DB)
+		if err != nil {
+			log.Fatalf("Connection to database failed: %s", err)
+		}
+
+		positionRepo = mongoposition.NewPositionsRepository(db, config.Mongo.Collections.Positions, config.Mongo.Collections.Employees)
+		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.Mongo.Collections.Employees, config.Mongo.Collections.Positions)
+	default:
+		return nil, nil, errors.New("Incorrect database given for tests")
 	}
-	defer db.Close()
+	return employeeRepo, positionRepo, nil
+}
 
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
+func TestEmployeeRepository_Create(t *testing.T) {
+	employeeRepo, positionRepo, err := initEmpRepo()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	InitData(positionRepo, employeeRepo)
-	defer DeleteData(positionRepo, employeeRepo)
+	InitDataEmployees(positionRepo, employeeRepo)
+	defer DeleteDataEmployees(positionRepo, employeeRepo)
 
 	tests := []struct {
 		name        string
@@ -202,8 +229,8 @@ func TestEmployeeRepository_Get(t *testing.T) {
 	positionRepo := position.NewPositionsRepository(db)
 	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
-	InitData(positionRepo, employeeRepo)
-	defer DeleteData(positionRepo, employeeRepo)
+	InitDataEmployees(positionRepo, employeeRepo)
+	defer DeleteDataEmployees(positionRepo, employeeRepo)
 
 	tests := []struct {
 		name        string
@@ -261,8 +288,8 @@ func TestEmployeeRepository_Update(t *testing.T) {
 	positionRepo := position.NewPositionsRepository(db)
 	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
-	InitData(positionRepo, employeeRepo)
-	defer DeleteData(positionRepo, employeeRepo)
+	InitDataEmployees(positionRepo, employeeRepo)
+	defer DeleteDataEmployees(positionRepo, employeeRepo)
 
 	tests := []struct {
 		name        string
@@ -315,8 +342,8 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 	positionRepo := position.NewPositionsRepository(db)
 	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
-	InitData(positionRepo, employeeRepo)
-	defer DeleteData(positionRepo, employeeRepo)
+	InitDataEmployees(positionRepo, employeeRepo)
+	defer DeleteDataEmployees(positionRepo, employeeRepo)
 
 	tests := []struct {
 		name        string
@@ -363,8 +390,8 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 	positionRepo := position.NewPositionsRepository(db)
 	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
-	InitData(positionRepo, employeeRepo)
-	defer DeleteData(positionRepo, employeeRepo)
+	InitDataEmployees(positionRepo, employeeRepo)
+	defer DeleteDataEmployees(positionRepo, employeeRepo)
 
 	tests := []struct {
 		name     string

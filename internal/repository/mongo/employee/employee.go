@@ -11,19 +11,15 @@ import (
 	"time"
 )
 
-type PositionsRepository interface {
-	Get(ctx context.Context, id string) (*domain.Position, error)
-}
-
 type employeeRepository struct {
-	collection    *mongo.Collection
-	positionsRepo PositionsRepository
+	employeeCollection *mongo.Collection
+	positionCollection *mongo.Collection
 }
 
-func NewEmployeesRepository(c *mongo.Collection, positionsRepo PositionsRepository) domain.EmployeesRepository {
+func NewEmployeesRepository(db *mongo.Database, emp, pos string) domain.EmployeesRepository {
 	return &employeeRepository{
-		collection:    c,
-		positionsRepo: positionsRepo,
+		employeeCollection: db.Collection(emp),
+		positionCollection: db.Collection(pos),
 	}
 }
 
@@ -36,11 +32,12 @@ func (e *employeeRepository) Create(ctx context.Context, employee domain.Employe
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if _, err := e.positionsRepo.Get(ctx, employee.PositionID); err != nil {
+	position := domain.Position{}
+	if err := e.positionCollection.FindOne(ctx, bson.M{"id": employee.PositionID}).Decode(&position); err != nil {
 		return nil, err
 	}
 
-	_, err := e.collection.InsertOne(ctx, bson.M{
+	_, err := e.employeeCollection.InsertOne(ctx, bson.M{
 		"id":          employee.ID,
 		"first_name":  employee.FirstName,
 		"last_name":   employee.LastName,
@@ -59,7 +56,7 @@ func (e *employeeRepository) Get(ctx context.Context, id string) (*domain.Employ
 	defer cancel()
 
 	employee := domain.Employee{}
-	err := e.collection.FindOne(ctx, bson.M{"id": id}).Decode(&employee)
+	err := e.employeeCollection.FindOne(ctx, bson.M{"id": id}).Decode(&employee)
 	if err != nil {
 		return nil, errors.Join(err)
 	}
@@ -80,7 +77,7 @@ func (e *employeeRepository) Update(ctx context.Context, employee domain.Employe
 		},
 	}
 
-	res, err := e.collection.UpdateOne(ctx, bson.M{"id": employee.ID}, update)
+	res, err := e.employeeCollection.UpdateOne(ctx, bson.M{"id": employee.ID}, update)
 	if err != nil {
 		return err
 	}
@@ -99,7 +96,7 @@ func (e *employeeRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	res, err := e.collection.DeleteOne(ctx, bson.M{"id": id})
+	res, err := e.employeeCollection.DeleteOne(ctx, bson.M{"id": id})
 	if err != nil {
 		return err
 	}
@@ -119,7 +116,7 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 
 	employees := make([]domain.Employee, 0)
 
-	cur, err := e.collection.Find(context.TODO(), bson.D{{}}, findOptions)
+	cur, err := e.employeeCollection.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,7 +143,7 @@ func (e *employeeRepository) GetByPosition(ctx context.Context, positionId strin
 	defer cancel()
 
 	employee := domain.Employee{}
-	err := e.collection.FindOne(ctx, bson.M{"position_id": positionId}).Decode(&employee)
+	err := e.employeeCollection.FindOne(ctx, bson.M{"position_id": positionId}).Decode(&employee)
 	if err != nil {
 		return nil, errors.Join(err)
 	}
