@@ -75,7 +75,7 @@ func InitPosRepo() (domain.PositionsRepository, error) {
 
 	switch config.Name {
 	case "testpostgres":
-		db, err := postgres.ConnectPostgres(config.DB)
+		db, err := postgres.ConnectPostgres(config.PostgresConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
@@ -83,12 +83,12 @@ func InitPosRepo() (domain.PositionsRepository, error) {
 		positionRepo = position.NewPositionsRepository(db)
 
 	case "testmongo":
-		db, err := mongoDB.ConnectMongo(config.DB)
+		db, err := mongoDB.ConnectMongo(config.MongoConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
 
-		positionRepo = mongoposition.NewPositionsRepository(db, config.Mongo.Collections.Positions, config.Mongo.Collections.Employees)
+		positionRepo = mongoposition.NewPositionsRepository(db, config.MongoConfig.Collections.Positions, config.MongoConfig.Collections.Employees)
 	default:
 		return nil, errors.New("Incorrect database given for tests")
 	}

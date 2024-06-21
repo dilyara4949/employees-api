@@ -33,9 +33,9 @@ func main() {
 	var positionRepo domain.PositionsRepository
 	var employeeRepo domain.EmployeesRepository
 
-	switch config.DB.Name {
+	switch config.DatabaseType {
 	case "postgres":
-		db, err := postgres.ConnectPostgres(config.DB)
+		db, err := postgres.ConnectPostgres(config.PostgresConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
@@ -44,16 +44,16 @@ func main() {
 		positionRepo = position.NewPositionsRepository(db)
 		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
 	case "mongo":
-		db, err := mongoDB.ConnectMongo(config.DB)
+		db, err := mongoDB.ConnectMongo(config.MongoConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
 
-		positionRepo = mongoposition.NewPositionsRepository(db, config.Mongo.Collections.Positions, config.Mongo.Collections.Employees)
-		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.Mongo.Collections.Employees, config.Mongo.Collections.Positions)
+		positionRepo = mongoposition.NewPositionsRepository(db, config.MongoConfig.Collections.Positions, config.MongoConfig.Collections.Employees)
+		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.MongoConfig.Collections.Employees, config.MongoConfig.Collections.Positions)
 
 	default:
-		log.Fatalf("%s is unknown database", config.DB.Name)
+		log.Fatalf("%s is unknown database", config.DatabaseType)
 	}
 
 	log.Println("Successfully connected to database")

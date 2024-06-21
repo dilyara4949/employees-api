@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -11,8 +12,9 @@ type Config struct {
 	RestPort       string
 	GrpcPort       string
 	Address        string
-	DB
-	Mongo
+	DatabaseType   string
+	PostgresConfig
+	MongoConfig
 }
 
 type DB struct {
@@ -22,12 +24,18 @@ type DB struct {
 	Password string
 	Name     string
 	Timeout  int
-	MaxConn  int
 }
 
-type Mongo struct {
+type PostgresConfig struct {
+	DB
+	MaxConn int
+}
+
+type MongoConfig struct {
+	DB
 	Collections
 }
+
 type Collections struct {
 	Positions string
 	Employees string
@@ -50,6 +58,7 @@ var (
 const (
 	positionsCollection = "positions"
 	employeesCollection = "employees"
+	defaultDB           = "postgres"
 )
 
 func NewConfig() (Config, error) {
@@ -131,29 +140,53 @@ func NewConfig() (Config, error) {
 		empCollection = employeesCollection
 	}
 
+	dbType := os.Getenv("DATABASE_TYPE")
+	if dbType == "" {
+		dbType = defaultDB
+	}
+
 	if err := errors.Join(errs...); err != nil {
 		return Config{}, err
 	}
 
-	return Config{
-		jwtTokenSecret,
-		restPort,
-		grpcPort,
-		address,
-		DB{
-			DbHost,
-			DbPort,
-			DbUser,
-			DbPassword,
-			DbName,
-			DbTimeout,
+	cfg := Config{
+		JWTTokenSecret: jwtTokenSecret,
+		RestPort:       restPort,
+		GrpcPort:       grpcPort,
+		Address:        address,
+		DatabaseType:   dbType,
+	}
+
+	if strings.Contains(DbName, "postgres") {
+		cfg.PostgresConfig = PostgresConfig{
+			DB{
+				DbHost,
+				DbPort,
+				DbUser,
+				DbPassword,
+				DbName,
+				DbTimeout,
+			},
 			DbMaxconn,
-		},
-		Mongo{
+		}
+	} else if strings.Contains(DbName, "mongo") {
+		cfg.MongoConfig = MongoConfig{
+			DB{
+				DbHost,
+				DbPort,
+				DbUser,
+				DbPassword,
+				DbName,
+				DbTimeout,
+			},
 			Collections{
 				posCollection,
 				empCollection,
 			},
-		},
-	}, nil
+		}
+	} else {
+		return Config{}, errors.New("incorrect database")
+	}
+
+	return cfg, nil
 }

@@ -126,9 +126,9 @@ func initEmpRepo() (domain.EmployeesRepository, domain.PositionsRepository, erro
 	var employeeRepo domain.EmployeesRepository
 	var positionRepo domain.PositionsRepository
 
-	switch config.Name {
-	case "testpostgres":
-		db, err := postgres.ConnectPostgres(config.DB)
+	switch config.DatabaseType {
+	case "postgres":
+		db, err := postgres.ConnectPostgres(config.PostgresConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
@@ -136,14 +136,14 @@ func initEmpRepo() (domain.EmployeesRepository, domain.PositionsRepository, erro
 		positionRepo = position.NewPositionsRepository(db)
 		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
 
-	case "testmongo":
-		db, err := mongoDB.ConnectMongo(config.DB)
+	case "mongo":
+		db, err := mongoDB.ConnectMongo(config.MongoConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
 		}
 
-		positionRepo = mongoposition.NewPositionsRepository(db, config.Mongo.Collections.Positions, config.Mongo.Collections.Employees)
-		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.Mongo.Collections.Employees, config.Mongo.Collections.Positions)
+		positionRepo = mongoposition.NewPositionsRepository(db, config.MongoConfig.Collections.Positions, config.MongoConfig.Collections.Employees)
+		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.MongoConfig.Collections.Employees, config.MongoConfig.Collections.Positions)
 	default:
 		return nil, nil, errors.New("Incorrect database given for tests")
 	}
@@ -215,19 +215,10 @@ func TestEmployeeRepository_Create(t *testing.T) {
 }
 
 func TestEmployeeRepository_Get(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
-
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitDataEmployees(positionRepo, employeeRepo)
 	defer DeleteDataEmployees(positionRepo, employeeRepo)
@@ -274,19 +265,10 @@ func TestEmployeeRepository_Get(t *testing.T) {
 }
 
 func TestEmployeeRepository_Update(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
-
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitDataEmployees(positionRepo, employeeRepo)
 	defer DeleteDataEmployees(positionRepo, employeeRepo)
@@ -328,19 +310,10 @@ func TestEmployeeRepository_Update(t *testing.T) {
 }
 
 func TestEmployeeRepository_Delete(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
-
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitDataEmployees(positionRepo, employeeRepo)
 	defer DeleteDataEmployees(positionRepo, employeeRepo)
@@ -376,19 +349,10 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 }
 
 func TestEmployeeRepository_GetAll(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
-
-	db, err := postgres.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
 
 	InitDataEmployees(positionRepo, employeeRepo)
 	defer DeleteDataEmployees(positionRepo, employeeRepo)

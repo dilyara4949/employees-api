@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func ConnectMongo(cfg config.DB) (*mongo.Database, error) {
+func ConnectMongo(cfg config.MongoConfig) (*mongo.Database, error) {
 	uri := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s/?authSource=admin", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
 	clientOptions := options.Client().ApplyURI(uri)
 

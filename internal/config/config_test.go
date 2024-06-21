@@ -28,7 +28,7 @@ func TestNewConfig(t *testing.T) {
 				"DB_PORT":            "qw",
 				"DB_USER":            "qw",
 				"DB_PASSWORD":        "qw",
-				"DB_NAME":            "qw",
+				"DB_NAME":            "mongo",
 				"DB_TIMEOUT":         "1",
 				"DB_MAX_CONNECTIONS": "1",
 			},
@@ -37,16 +37,15 @@ func TestNewConfig(t *testing.T) {
 				RestPort:       "restport",
 				JWTTokenSecret: "secret",
 				GrpcPort:       "qw",
-				DB: DB{
-					Host:     "qw",
-					Port:     "qw",
-					User:     "qw",
-					Password: "qw",
-					Name:     "qw",
-					Timeout:  1,
-					MaxConn:  1,
-				},
-				Mongo: Mongo{
+				MongoConfig: MongoConfig{
+					DB{
+						Host:     "qw",
+						Port:     "qw",
+						User:     "qw",
+						Password: "qw",
+						Name:     "qw",
+						Timeout:  1,
+					},
 					Collections{
 						Positions: positionsCollection,
 						Employees: employeesCollection,
