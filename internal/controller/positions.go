@@ -155,8 +155,10 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
 	pageSize, _ := strconv.ParseInt(r.URL.Query().Get("size"), 10, 64)
 
-	if page <= 0 || pageSize <= 0 {
+	if page <= 0 {
 		page = pageDefault
+	}
+	if pageSize <= 0 {
 		pageSize = pageSizeDefault
 	}
 
