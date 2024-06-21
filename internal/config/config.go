@@ -45,8 +45,11 @@ var (
 	errMissingDbPassword     = errors.New("DB_PASSWORD is empty")
 	errMissingDbTimeout      = errors.New("DB_TIMEOUT is empty")
 	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
-	positionsCollection      = "positions"
-	employeesCollection      = "employees"
+)
+
+const (
+	positionsCollection = "positions"
+	employeesCollection = "employees"
 )
 
 func NewConfig() (Config, error) {
@@ -118,6 +121,16 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errors.New("DB_MAX_CONNECTIONS must be an integer"))
 	}
 
+	posCollection := os.Getenv("POSITIONS_COLLECTION")
+	if posCollection == "" {
+		posCollection = positionsCollection
+	}
+
+	empCollection := os.Getenv("EMPLOYEES_COLLECTION")
+	if empCollection == "" {
+		empCollection = employeesCollection
+	}
+
 	if err := errors.Join(errs...); err != nil {
 		return Config{}, err
 	}
@@ -138,8 +151,8 @@ func NewConfig() (Config, error) {
 		},
 		Mongo{
 			Collections{
-				positionsCollection,
-				employeesCollection,
+				posCollection,
+				empCollection,
 			},
 		},
 	}, nil

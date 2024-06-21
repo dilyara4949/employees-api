@@ -23,11 +23,6 @@ import (
 	"github.com/dilyara4949/employees-api/internal/route"
 )
 
-var (
-	posCollection = "positions"
-	empCollection = "employees"
-)
-
 func main() {
 
 	config, err := conf.NewConfig()
