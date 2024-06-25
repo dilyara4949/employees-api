@@ -4,9 +4,11 @@ import (
 	"fmt"
 	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
+	"github.com/dilyara4949/employees-api/internal/database/redis"
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
+	redis2 "github.com/dilyara4949/employees-api/internal/repository/redis"
 
 	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
@@ -85,7 +87,11 @@ func main() {
 		log.Printf("Hosting server on: %s", listen.Addr().String())
 	}()
 
-	positionController := controller.NewPositionsController(positionRepo)
+	rdb := redis.ConnectRedis(config.RedisConfig)
+
+	positionCache := redis2.NewPositionCache(rdb, config.RedisConfig.Timeout)
+
+	positionController := controller.NewPositionsController(positionRepo, positionCache)
 	employeeController := controller.NewEmployeesController(employeeRepo)
 
 	mux := http.NewServeMux()

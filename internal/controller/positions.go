@@ -3,18 +3,21 @@ package controller
 import (
 	"encoding/json"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/dilyara4949/employees-api/internal/repository/redis"
 	"github.com/google/uuid"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 type PositionsController struct {
-	Repo domain.PositionsRepository
+	Repo  domain.PositionsRepository
+	cache redis.PositionCache
 }
 
-func NewPositionsController(repo domain.PositionsRepository) *PositionsController {
-	return &PositionsController{repo}
+func NewPositionsController(repo domain.PositionsRepository, cache redis.PositionCache) *PositionsController {
+	return &PositionsController{repo, cache}
 }
 
 func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request) {
@@ -29,11 +32,18 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	position, err := c.Repo.Get(r.Context(), positionID)
+	position, err := c.cache.Get(r.Context(), positionID)
+	if err != nil || position == nil || position.ID != "" {
+		position, err = c.Repo.Get(r.Context(), positionID)
+		if err != nil {
+			errorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})
+			return
+		}
 
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})
-		return
+		err = c.cache.Set(r.Context(), positionID, position)
+		if err != nil {
+			log.Printf("error at caching position: %v", err)
+		}
 	}
 
 	response, err := json.Marshal(position)
@@ -72,6 +82,11 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	err = c.cache.Set(r.Context(), position.ID, position)
+	if err != nil {
+		log.Printf("error at caching position: %v", err)
+	}
+
 	response, err := json.Marshal(position)
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
@@ -100,6 +115,11 @@ func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error deleting position", Status: http.StatusInternalServerError, Cause: err})
 		return
+	}
+
+	err = c.cache.Delete(r.Context(), positionID)
+	if err != nil {
+		log.Printf("error at deleting position from cache: %v", err)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -133,6 +153,11 @@ func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Requ
 	if err := c.Repo.Update(r.Context(), position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error updating position", Status: http.StatusInternalServerError, Cause: err})
 		return
+	}
+
+	err = c.cache.Set(r.Context(), positionID, &position)
+	if err != nil {
+		log.Printf("error at updating position cache: %v", err)
 	}
 
 	response, err := json.Marshal(position)

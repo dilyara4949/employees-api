@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -15,6 +16,7 @@ type Config struct {
 	DatabaseType   string
 	PostgresConfig
 	MongoConfig
+	RedisConfig
 }
 
 type DB struct {
@@ -34,6 +36,15 @@ type PostgresConfig struct {
 type MongoConfig struct {
 	DB
 	Collections
+}
+
+type RedisConfig struct {
+	Host     string
+	Port     string
+	Password string
+	Timeout  time.Duration
+	PoolSize int
+	Database int
 }
 
 type Collections struct {
