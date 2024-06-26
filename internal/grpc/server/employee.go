@@ -2,21 +2,25 @@ package server
 
 import (
 	"context"
+	"log"
 
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/dilyara4949/employees-api/internal/repository/redis"
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type EmployeeServer struct {
-	Repo domain.EmployeesRepository
+	Repo  domain.EmployeesRepository
+	cache redis.EmployeeCache
 	pb.UnimplementedEmployeeServiceServer
 }
 
-func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
+func NewEmployeeServer(repo domain.EmployeesRepository, cache redis.EmployeeCache) *EmployeeServer {
 	return &EmployeeServer{
-		Repo: repo,
+		Repo:  repo,
+		cache: cache,
 	}
 }
 
@@ -51,9 +55,17 @@ func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, erro
 		return nil, status.Errorf(codes.InvalidArgument, "got nil id in get employee")
 	}
 
-	employee, err := s.Repo.Get(ctx, id.Value)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+	employee, err := s.cache.Get(ctx, id.GetValue())
+	if err != nil || employee == nil {
+		employee, err = s.Repo.Get(ctx, id.GetValue())
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+
+		err = s.cache.Set(ctx, id.GetValue(), employee)
+		if err != nil {
+			log.Printf("error at caching employee: %v", err)
+		}
 	}
 	return employeeToProto(employee), nil
 }
@@ -69,6 +81,11 @@ func (s *EmployeeServer) Create(ctx context.Context, emp *pb.Employee) (*pb.Empl
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
+	err = s.cache.Set(ctx, employee.ID, employee)
+	if err != nil {
+		log.Printf("error at caching employee: %v", err)
+	}
 	return employeeToProto(employee), nil
 }
 
@@ -83,6 +100,11 @@ func (s *EmployeeServer) Update(ctx context.Context, emp *pb.Employee) (*pb.Empl
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
+	err = s.cache.Set(ctx, employee.ID, employee)
+	if err != nil {
+		log.Printf("error at updating employee cache: %v", err)
+	}
 	return emp, nil
 }
 
@@ -91,10 +113,16 @@ func (s *EmployeeServer) Delete(ctx context.Context, id *pb.Id) (*pb.Status, err
 		return nil, status.Errorf(codes.InvalidArgument, "got nil id in delete employees")
 	}
 
-	err := s.Repo.Delete(ctx, id.Value)
+	err := s.Repo.Delete(ctx, id.GetValue())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
+	err = s.cache.Delete(ctx, id.GetValue())
+	if err != nil {
+		log.Printf("error at deleting employee from cache: %v", err)
+	}
+
 	return &pb.Status{Status: 0}, nil
 }
 

@@ -2,15 +2,19 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/google/uuid"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/dilyara4949/employees-api/internal/repository/redis"
+	"github.com/google/uuid"
 )
 
 type EmployeesController struct {
-	Repo domain.EmployeesRepository
+	Repo  domain.EmployeesRepository
+	cache redis.EmployeeCache
 }
 
 const (
@@ -18,8 +22,8 @@ const (
 	pageSizeDefault = 50
 )
 
-func NewEmployeesController(repo domain.EmployeesRepository) *EmployeesController {
-	return &EmployeesController{repo}
+func NewEmployeesController(repo domain.EmployeesRepository, cache redis.EmployeeCache) *EmployeesController {
+	return &EmployeesController{repo, cache}
 }
 
 func (c *EmployeesController) GetEmployee(w http.ResponseWriter, r *http.Request) {
@@ -34,11 +38,18 @@ func (c *EmployeesController) GetEmployee(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	employee, err := c.Repo.Get(r.Context(), employeeID)
+	employee, err := c.cache.Get(r.Context(), employeeID)
+	if err != nil || employee == nil {
+		employee, err = c.Repo.Get(r.Context(), employeeID)
+		if err != nil {
+			errorHandler(w, r, &HTTPError{Detail: "error getting employee", Status: http.StatusInternalServerError, Cause: err})
+			return
+		}
 
-	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error getting employee", Status: http.StatusInternalServerError, Cause: err})
-		return
+		err = c.cache.Set(r.Context(), employeeID, employee)
+		if err != nil {
+			log.Printf("error at caching employee: %v", err)
+		}
 	}
 
 	response, err := json.Marshal(employee)
@@ -78,6 +89,11 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	err = c.cache.Set(r.Context(), employee.ID, employee)
+	if err != nil {
+		log.Printf("error at caching employee: %v", err)
+	}
+
 	response, err := json.Marshal(employee)
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error at marshal employee", Status: http.StatusInternalServerError, Cause: err})
@@ -102,10 +118,14 @@ func (c *EmployeesController) DeleteEmployee(w http.ResponseWriter, r *http.Requ
 	}
 
 	err := c.Repo.Delete(r.Context(), employeeID)
-
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error deleting employee", Status: http.StatusInternalServerError, Cause: err})
 		return
+	}
+
+	err = c.cache.Delete(r.Context(), employeeID)
+	if err != nil {
+		log.Printf("error at deleting employee from cache: %v", err)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -139,6 +159,11 @@ func (c *EmployeesController) UpdateEmployee(w http.ResponseWriter, r *http.Requ
 	if err := c.Repo.Update(r.Context(), employee); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error updating employee", Status: http.StatusInternalServerError, Cause: err})
 		return
+	}
+
+	err = c.cache.Set(r.Context(), employee.ID, &employee)
+	if err != nil {
+		log.Printf("error at updating employee cache: %v", err)
 	}
 
 	response, err := json.Marshal(employee)

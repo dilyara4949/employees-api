@@ -37,6 +37,11 @@ func main() {
 	var positionRepo domain.PositionsRepository
 	var employeeRepo domain.EmployeesRepository
 
+	rdb := redis.ConnectRedis(config.RedisConfig)
+
+	positionCache := redis2.NewPositionCache(rdb, config.RedisConfig.Ttl)
+	employeeCache := redis2.NewEmployeeCache(rdb, config.RedisConfig.Ttl)
+
 	switch config.DatabaseType {
 	case "postgres":
 		db, err := postgres.ConnectPostgres(config.PostgresConfig)
@@ -63,8 +68,8 @@ func main() {
 	log.Println("Successfully connected to database")
 
 	go func() {
-		positionServer := server.NewPositionServer(positionRepo)
-		employeeServer := server.NewEmployeeServer(employeeRepo)
+		positionServer := server.NewPositionServer(positionRepo, positionCache)
+		employeeServer := server.NewEmployeeServer(employeeRepo, employeeCache)
 
 		listen, err := net.Listen("tcp", fmt.Sprintf("%s:%s", config.Address, config.GrpcPort))
 		if err != nil {
@@ -89,12 +94,8 @@ func main() {
 		log.Printf("Hosting server on: %s", listen.Addr().String())
 	}()
 
-	rdb := redis.ConnectRedis(config.RedisConfig)
-
-	positionCache := redis2.NewPositionCache(rdb, config.RedisConfig.Ttl)
-
 	positionController := controller.NewPositionsController(positionRepo, positionCache)
-	employeeController := controller.NewEmployeesController(employeeRepo)
+	employeeController := controller.NewEmployeesController(employeeRepo, employeeCache)
 
 	mux := http.NewServeMux()
 

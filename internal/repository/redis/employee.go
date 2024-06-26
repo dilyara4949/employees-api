@@ -9,22 +9,22 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type positionCache struct {
+type employeeCache struct {
 	client *redis.Client
 	ttl    time.Duration
 }
 
-type PositionCache interface {
-	Set(ctx context.Context, key string, value *domain.Position) error
-	Get(ctx context.Context, key string) (*domain.Position, error)
+type EmployeeCache interface {
+	Set(ctx context.Context, key string, value *domain.Employee) error
+	Get(ctx context.Context, key string) (*domain.Employee, error)
 	Delete(ctx context.Context, key string) error
 }
 
-func NewPositionCache(client *redis.Client, ttl time.Duration) PositionCache {
-	return &positionCache{client: client, ttl: ttl}
+func NewEmployeeCache(client *redis.Client, ttl time.Duration) EmployeeCache {
+	return &employeeCache{client: client, ttl: ttl}
 }
 
-func (c *positionCache) Set(ctx context.Context, key string, value *domain.Position) error {
+func (c *employeeCache) Set(ctx context.Context, key string, value *domain.Employee) error {
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -32,13 +32,13 @@ func (c *positionCache) Set(ctx context.Context, key string, value *domain.Posit
 	return c.client.Set(ctx, key, data, c.ttl).Err()
 }
 
-func (c *positionCache) Get(ctx context.Context, key string) (*domain.Position, error) {
+func (c *employeeCache) Get(ctx context.Context, key string) (*domain.Employee, error) {
 	data, err := c.client.Get(ctx, key).Result()
 	if err != nil {
 		return nil, err
 	}
 
-	var value domain.Position
+	var value domain.Employee
 
 	err = json.Unmarshal([]byte(data), &value)
 	if err != nil {
@@ -46,7 +46,6 @@ func (c *positionCache) Get(ctx context.Context, key string) (*domain.Position, 
 	}
 	return &value, nil
 }
-
-func (c *positionCache) Delete(ctx context.Context, key string) error {
+func (c *employeeCache) Delete(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }

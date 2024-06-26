@@ -21,6 +21,21 @@ type posRepoMock struct {
 	err error
 }
 
+type posCacheMock struct {
+}
+
+func (c posCacheMock) Set(_ context.Context, _ string, _ *domain.Position) error {
+	return nil
+}
+
+func (c posCacheMock) Get(_ context.Context, _ string) (*domain.Position, error) {
+	return nil, nil
+}
+
+func (c posCacheMock) Delete(_ context.Context, _ string) error {
+	return nil
+}
+
 func (p posRepoMock) Create(_ context.Context, position domain.Position) (*domain.Position, error) {
 	if p.err != nil {
 		return nil, p.err
@@ -78,21 +93,25 @@ func TestPositionsController_GetPosition(t *testing.T) {
 		id       string
 		expected string
 		repo     posRepoMock
+		cache    posCacheMock
 	}{
 		"OK": {
 			id:       "1",
 			expected: "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
 			repo:     posRepoMock{},
+			cache:    posCacheMock{},
 		},
 		"err": {
 			id:       "err",
 			expected: "error getting position\n",
 			repo:     posRepoMock{err: errors.New("error")},
+			cache:    posCacheMock{},
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewPositionsController(tt.repo)
+			h := NewPositionsController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("GET /{id}", h.GetPosition)
@@ -124,27 +143,31 @@ func TestPositionsController_CreatePosition(t *testing.T) {
 		body     string
 		expected string
 		repo     posRepoMock
+		cache    posCacheMock
 	}{
 		"OK": {
 			body:     "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
 			expected: "{\"id\":\"id\",\"name\":\"name\",\"salary\":100}",
 			repo:     posRepoMock{},
+			cache:    posCacheMock{},
 		},
 		"Empty body": {
 			body:     "",
 			expected: "invalid request body\n",
 			repo:     posRepoMock{},
+			cache:    posCacheMock{},
 		},
 		"err": {
 			body:     "{\"id\":\"err\",\"name\":\"name\",\"salary\":100}",
 			expected: "error creating position\n",
 			repo:     posRepoMock{err: errors.New("error")},
+			cache:    posCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewPositionsController(tt.repo)
+			h := NewPositionsController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("POST /", h.CreatePosition)
@@ -182,24 +205,27 @@ func TestPositionsController_DeletePosition(t *testing.T) {
 		expected     string
 		expectedCode int
 		repo         posRepoMock
+		cache        posCacheMock
 	}{
 		"OK": {
 			id:           "10",
 			expected:     "",
 			expectedCode: 204,
 			repo:         posRepoMock{},
+			cache:        posCacheMock{},
 		},
 		"err": {
 			id:           "err",
 			expected:     "error deleting position\n",
 			expectedCode: 500,
 			repo:         posRepoMock{err: errors.New("error")},
+			cache:        posCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewPositionsController(tt.repo)
+			h := NewPositionsController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("DELETE /{id}", h.DeletePosition)
@@ -241,30 +267,34 @@ func TestPositionsController_UpdatePosition(t *testing.T) {
 		body     string
 		expected string
 		repo     posRepoMock
+		cache    posCacheMock
 	}{
 		"OK": {
 			id:       "1",
 			body:     "{\"id\":\"1\",\"name\":\"updated name\",\"salary\":200}",
 			expected: "{\"id\":\"1\",\"name\":\"updated name\",\"salary\":200}",
 			repo:     posRepoMock{},
+			cache:    posCacheMock{},
 		},
 		"Empty body": {
 			id:       "1",
 			body:     "",
 			expected: "invalid request body\n",
 			repo:     posRepoMock{},
+			cache:    posCacheMock{},
 		},
 		"err": {
 			id:       "err",
 			body:     "{\"err\":\"1\",\"name\":\"updated name\",\"salary\":200}",
 			expected: "error updating position\n",
 			repo:     posRepoMock{err: errors.New("error")},
+			cache:    posCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewPositionsController(tt.repo)
+			h := NewPositionsController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("PUT /{id}", h.UpdatePosition)
@@ -299,20 +329,23 @@ func TestPositionsController_GetAllPositions(t *testing.T) {
 	tests := map[string]struct {
 		expected string
 		repo     posRepoMock
+		cache    posCacheMock
 	}{
 		"OK": {
 			expected: "[{\"id\":\"id\",\"name\":\"name\",\"salary\":100}]",
 			repo:     posRepoMock{},
+			cache:    posCacheMock{},
 		},
 		"error": {
 			expected: "error at getting all positions\nnull",
 			repo:     posRepoMock{err: errors.New("error")},
+			cache:    posCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewPositionsController(tt.repo)
+			h := NewPositionsController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("GET /", h.GetAllPositions)

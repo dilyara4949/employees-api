@@ -20,6 +20,21 @@ type empRepoMock struct {
 	err error
 }
 
+type empCacheMock struct {
+}
+
+func (c empCacheMock) Set(_ context.Context, _ string, _ *domain.Employee) error {
+	return nil
+}
+
+func (c empCacheMock) Get(_ context.Context, _ string) (*domain.Employee, error) {
+	return nil, nil
+}
+
+func (c empCacheMock) Delete(_ context.Context, _ string) error {
+	return nil
+}
+
 func (e empRepoMock) Create(_ context.Context, employee domain.Employee) (*domain.Employee, error) {
 	if e.err != nil {
 		return nil, e.err
@@ -95,21 +110,25 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 		id       string
 		expected string
 		repo     empRepoMock
+		cache    empCacheMock
 	}{
 		"OK": {
 			id:       "id",
 			expected: "{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
 			repo:     empRepoMock{},
+			cache:    empCacheMock{},
 		},
 		"err": {
 			id:       "err",
 			expected: "error getting employee\n",
 			repo:     empRepoMock{err: errors.New("error")},
+			cache:    empCacheMock{},
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewEmployeesController(tt.repo)
+			h := NewEmployeesController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("/employees/{id}", h.GetEmployee)
@@ -145,27 +164,31 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 		body     string
 		expected string
 		repo     empRepoMock
+		cache    empCacheMock
 	}{
 		"OK": {
 			body:     "{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
 			expected: "{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
 			repo:     empRepoMock{},
+			cache:    empCacheMock{},
 		},
 		"Empty body": {
 			body:     "",
 			expected: "invalid request body\n",
 			repo:     empRepoMock{},
+			cache:    empCacheMock{},
 		},
 		"err": {
 			body:     "{\"id\":\"err\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}",
 			expected: "error creating employee\n",
 			repo:     empRepoMock{err: errors.New("error")},
+			cache:    empCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewEmployeesController(tt.repo)
+			h := NewEmployeesController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("/employees", h.CreateEmployee)
@@ -202,24 +225,27 @@ func TestEmployeesController_DeleteEmployee(t *testing.T) {
 		expected     string
 		expectedCode int
 		repo         empRepoMock
+		cache        empCacheMock
 	}{
 		"OK": {
 			id:           "10",
 			expected:     "",
 			expectedCode: 204,
 			repo:         empRepoMock{},
+			cache:        empCacheMock{},
 		},
 		"err": {
 			id:           "err",
 			expected:     "error deleting employee\n",
 			expectedCode: 500,
 			repo:         empRepoMock{err: errors.New("error")},
+			cache:        empCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewEmployeesController(tt.repo)
+			h := NewEmployeesController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("/employees/{id}", h.DeleteEmployee)
@@ -261,18 +287,21 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 		body     string
 		expected string
 		repo     empRepoMock
+		cache    empCacheMock
 	}{
 		"OK": {
 			id:       "id",
 			body:     "{\"id\":\"id\",\"firstname\":\"updated first name\",\"lastname\":\"updated last name\",\"position_id\":\"position id\"}",
 			expected: "{\"id\":\"id\",\"firstname\":\"updated first name\",\"lastname\":\"updated last name\",\"position_id\":\"position id\"}",
 			repo:     empRepoMock{},
+			cache:    empCacheMock{},
 		},
 		"Empty body": {
 			id:       "id",
 			body:     "",
 			expected: "invalid request body\n",
 			repo:     empRepoMock{},
+			cache:    empCacheMock{},
 		},
 		"err": {
 			id:       "err",
@@ -284,7 +313,7 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewEmployeesController(tt.repo)
+			h := NewEmployeesController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("/employees/{id}", h.UpdateEmployee)
@@ -320,20 +349,23 @@ func TestEmployeesController_GetAllEmployees(t *testing.T) {
 	tests := map[string]struct {
 		expected string
 		repo     empRepoMock
+		cache    empCacheMock
 	}{
 		"OK": {
 			repo:     empRepoMock{},
+			cache:    empCacheMock{},
 			expected: "[{\"id\":\"id\",\"firstname\":\"first name\",\"lastname\":\"last name\",\"position_id\":\"position id\"}]",
 		},
 		"err": {
 			repo:     empRepoMock{err: errors.New("error")},
 			expected: "error at getting all employees\n",
+			cache:    empCacheMock{},
 		},
 	}
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			h := NewEmployeesController(tt.repo)
+			h := NewEmployeesController(tt.repo, tt.cache)
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("/employees", h.GetAllEmployees)

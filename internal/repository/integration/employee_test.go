@@ -7,6 +7,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"reflect"
+	"testing"
+
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
@@ -15,9 +19,6 @@ import (
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
-	"log"
-	"reflect"
-	"testing"
 )
 
 func InitDataEmployees(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {

@@ -2,15 +2,19 @@ package server
 
 import (
 	"context"
+	"log"
 
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/dilyara4949/employees-api/internal/repository/redis"
 	pb "github.com/dilyara4949/employees-api/proto"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type PositionServer struct {
-	Repo domain.PositionsRepository
+	Repo  domain.PositionsRepository
+	cache redis.PositionCache
 	pb.UnimplementedPositionServiceServer
 }
 
@@ -35,9 +39,10 @@ func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequ
 	return &pb.PositionsList{Position: positionProtos, Page: page, PageSize: pageSize}, nil
 }
 
-func NewPositionServer(repo domain.PositionsRepository) *PositionServer {
+func NewPositionServer(repo domain.PositionsRepository, cache redis.PositionCache) *PositionServer {
 	return &PositionServer{
-		Repo: repo,
+		Repo:  repo,
+		cache: cache,
 	}
 }
 
@@ -46,10 +51,19 @@ func (s *PositionServer) Get(ctx context.Context, id *pb.Id) (*pb.Position, erro
 		return nil, status.Errorf(codes.InvalidArgument, "got nil id in get position")
 	}
 
-	position, err := s.Repo.Get(ctx, id.Value)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error getting position: %v", err)
+	position, err := s.cache.Get(ctx, id.GetValue())
+	if err != nil || position == nil {
+		position, err = s.Repo.Get(ctx, id.Value)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "error getting position: %v", err)
+		}
+
+		err = s.cache.Set(ctx, id.GetValue(), position)
+		if err != nil {
+			log.Printf("error at caching position: %v", err)
+		}
 	}
+
 	return positionToProto(position), nil
 }
 
@@ -59,10 +73,16 @@ func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Posi
 	}
 
 	position := protoToPosition(pos)
+	position.ID = uuid.New().String()
 
 	position, err := s.Repo.Create(ctx, *position)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	err = s.cache.Set(ctx, position.ID, position)
+	if err != nil {
+		log.Printf("error at caching position: %v", err)
 	}
 	return positionToProto(position), nil
 }
@@ -78,6 +98,11 @@ func (s *PositionServer) Update(ctx context.Context, pos *pb.Position) (*pb.Posi
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
+	err = s.cache.Set(ctx, position.ID, position)
+	if err != nil {
+		log.Printf("error at updating position cache: %v", err)
+	}
 	return pos, nil
 }
 
@@ -89,6 +114,11 @@ func (s *PositionServer) Delete(ctx context.Context, id *pb.Id) (*pb.Status, err
 	err := s.Repo.Delete(ctx, id.Value)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	err = s.cache.Delete(ctx, id.Value)
+	if err != nil {
+		log.Printf("error at deleting position from cache: %v", err)
 	}
 	return &pb.Status{Status: 0}, nil
 }

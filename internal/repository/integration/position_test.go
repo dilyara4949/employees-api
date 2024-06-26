@@ -7,15 +7,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"reflect"
+	"testing"
+
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
-	"log"
-	"reflect"
-	"testing"
 )
 
 func InitDataPositions(posRepo domain.PositionsRepository) {
@@ -73,7 +74,7 @@ func InitPosRepo() (domain.PositionsRepository, error) {
 
 	var positionRepo domain.PositionsRepository
 
-	switch config.Name {
+	switch config.DatabaseType {
 	case "testpostgres":
 		db, err := postgres.ConnectPostgres(config.PostgresConfig)
 		if err != nil {

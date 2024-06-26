@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -35,8 +34,7 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 	}
 
 	position, err := c.cache.Get(r.Context(), positionID)
-	if err != nil || position == nil || position.ID == "" {
-		fmt.Println("GOT FROM REPO, 000000000")
+	if err != nil || position == nil {
 		position, err = c.Repo.Get(r.Context(), positionID)
 		if err != nil {
 			errorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})
