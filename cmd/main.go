@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+
 	"github.com/dilyara4949/employees-api/internal/database"
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"net/http"
 
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/controller"
@@ -34,7 +35,7 @@ func main() {
 	log.Println("Successfully connected to database")
 
 	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := employee.NewEmployeesRepository(db, positionRepo)
+	employeeRepo := employee.NewEmployeesRepository(db)
 
 	go func() {
 		positionServer := server.NewPositionServer(positionRepo)
