@@ -45,6 +45,7 @@ type RedisConfig struct {
 	Timeout  time.Duration
 	PoolSize int
 	Database int
+	Ttl      time.Duration
 }
 
 type Collections struct {
@@ -64,12 +65,19 @@ var (
 	errMissingDbPassword     = errors.New("DB_PASSWORD is empty")
 	errMissingDbTimeout      = errors.New("DB_TIMEOUT is empty")
 	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
+	errMissingRedisHost      = errors.New("REDIS_HOST is empty")
+	errMissingRedisPort      = errors.New("REDIS_PORT is empty")
+	errMissingRedisPass      = errors.New("REDIS_PASSWORD is empty")
 )
 
 const (
-	positionsCollection = "positions"
-	employeesCollection = "employees"
-	defaultDB           = "postgres"
+	positionsCollection  = "positions"
+	employeesCollection  = "employees"
+	defaultDB            = "postgres"
+	defaultRedisTimeout  = 10
+	defaultRedisDB       = 0
+	defaultRedisPoolSize = 10
+	defaultRedisTtl      = 5
 )
 
 func NewConfig() (Config, error) {
@@ -156,6 +164,41 @@ func NewConfig() (Config, error) {
 		dbType = defaultDB
 	}
 
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		errs = append(errs, errMissingRedisHost)
+	}
+
+	redisPort := os.Getenv("REDIS_PORT")
+	if redisPort == "" {
+		errs = append(errs, errMissingRedisPort)
+	}
+
+	redisPass := os.Getenv("REDIS_PASSWORD")
+	if redisPass == "" {
+		errs = append(errs, errMissingRedisPass)
+	}
+
+	redisTimeout, err := strconv.Atoi(os.Getenv("REDIS_TIMEOUT"))
+	if err != nil {
+		redisTimeout = defaultRedisTimeout
+	}
+
+	redisTtl, err := strconv.Atoi(os.Getenv("REDIS_TTL"))
+	if err != nil {
+		redisTtl = defaultRedisTtl
+	}
+
+	redisDB, err := strconv.Atoi(os.Getenv("REDIS_DATABASE"))
+	if err != nil {
+		redisDB = defaultRedisDB
+	}
+
+	redisPoolSize, err := strconv.Atoi(os.Getenv("REDIS_POOL_SIZE"))
+	if err != nil {
+		redisPoolSize = defaultRedisPoolSize
+	}
+
 	if err := errors.Join(errs...); err != nil {
 		return Config{}, err
 	}
@@ -166,9 +209,18 @@ func NewConfig() (Config, error) {
 		GrpcPort:       grpcPort,
 		Address:        address,
 		DatabaseType:   dbType,
+		RedisConfig: RedisConfig{
+			Host:     redisHost,
+			Port:     redisPort,
+			Password: redisPass,
+			Database: redisDB,
+			PoolSize: redisPoolSize,
+			Timeout:  time.Duration(redisTimeout) * time.Second,
+			Ttl:      time.Duration(redisTtl) * time.Hour,
+		},
 	}
 
-	if strings.Contains(DbName, "postgres") {
+	if strings.Contains(dbType, "postgres") {
 		cfg.PostgresConfig = PostgresConfig{
 			DB{
 				DbHost,
@@ -180,7 +232,7 @@ func NewConfig() (Config, error) {
 			},
 			DbMaxconn,
 		}
-	} else if strings.Contains(DbName, "mongo") {
+	} else if strings.Contains(dbType, "mongo") {
 		cfg.MongoConfig = MongoConfig{
 			DB{
 				DbHost,

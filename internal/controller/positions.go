@@ -2,13 +2,15 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/dilyara4949/employees-api/internal/repository/redis"
-	"github.com/google/uuid"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/dilyara4949/employees-api/internal/repository/redis"
+	"github.com/google/uuid"
 )
 
 type PositionsController struct {
@@ -33,7 +35,8 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 	}
 
 	position, err := c.cache.Get(r.Context(), positionID)
-	if err != nil || position == nil || position.ID != "" {
+	if err != nil || position == nil || position.ID == "" {
+		fmt.Println("GOT FROM REPO, 000000000")
 		position, err = c.Repo.Get(r.Context(), positionID)
 		if err != nil {
 			errorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})

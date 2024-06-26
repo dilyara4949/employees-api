@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/database/redis"
@@ -10,15 +11,16 @@ import (
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 	redis2 "github.com/dilyara4949/employees-api/internal/repository/redis"
 
+	"log"
+	"net"
+	"net/http"
+
 	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"net/http"
 
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/controller"
@@ -89,7 +91,7 @@ func main() {
 
 	rdb := redis.ConnectRedis(config.RedisConfig)
 
-	positionCache := redis2.NewPositionCache(rdb, config.RedisConfig.Timeout)
+	positionCache := redis2.NewPositionCache(rdb, config.RedisConfig.Ttl)
 
 	positionController := controller.NewPositionsController(positionRepo, positionCache)
 	employeeController := controller.NewEmployeesController(employeeRepo)
