@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/google/uuid"
 )
 
 type employeeRepository struct {
@@ -35,6 +36,8 @@ const (
 func (e *employeeRepository) Create(ctx context.Context, employee domain.Employee) (*domain.Employee, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+
+	employee.ID = uuid.New().String()
 
 	if _, err := e.db.ExecContext(ctx, createPosition, employee.ID, employee.FirstName, employee.LastName, employee.PositionID); err != nil {
 		return nil, err

@@ -2,11 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type PositionsController struct {
@@ -64,8 +64,6 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
-
-	position.ID = uuid.New().String()
 
 	if position, err = c.Repo.Create(r.Context(), *position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
