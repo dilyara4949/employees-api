@@ -36,6 +36,8 @@ var (
 	errMissingDbPassword     = errors.New("DB_PASSWORD is empty")
 	errMissingDbTimeout      = errors.New("DB_TIMEOUT is empty")
 	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
+	errMaxConnType           = errors.New("DB_MAX_CONNECTIONS must be an integer")
+	errDbTimeoutType         = errors.New("DB_TIMEOUT must be an integer")
 )
 
 func NewConfig() (Config, error) {
@@ -94,7 +96,7 @@ func NewConfig() (Config, error) {
 
 	DbTimeout, err := strconv.Atoi(DbTimeoutStr)
 	if err != nil {
-		errs = append(errs, errors.New("DB_TIMEOUT must be an integer"))
+		errs = append(errs, errDbTimeoutType)
 	}
 
 	DbMaxConnStr := os.Getenv("DB_MAX_CONNECTIONS")
@@ -104,7 +106,7 @@ func NewConfig() (Config, error) {
 
 	DbMaxconn, err := strconv.Atoi(DbMaxConnStr)
 	if err != nil {
-		errs = append(errs, errors.New("DB_MAX_CONNECTIONS must be an integer"))
+		errs = append(errs, errMaxConnType)
 	}
 
 	if err := errors.Join(errs...); err != nil {
