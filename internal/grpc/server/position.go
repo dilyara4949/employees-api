@@ -18,8 +18,10 @@ func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequ
 	page := req.GetPage()
 	pageSize := req.GetPageSize()
 
-	if page <= 0 || pageSize <= 0 {
+	if page <= 0 {
 		page = pageDefault
+	}
+	if pageSize <= 0 {
 		pageSize = pageSizeDefault
 	}
 

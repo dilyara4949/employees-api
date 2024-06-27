@@ -42,7 +42,7 @@ func main() {
 		defer db.Close()
 
 		positionRepo = position.NewPositionsRepository(db)
-		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
+		employeeRepo = employee.NewEmployeesRepository(db)
 	case "mongo":
 		db, err := mongoDB.ConnectMongo(config.MongoConfig)
 		if err != nil {

@@ -2,11 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type EmployeesController struct {
@@ -69,8 +69,6 @@ func (c *EmployeesController) CreateEmployee(w http.ResponseWriter, r *http.Requ
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
-
-	employee.ID = uuid.New().String()
 
 	employee, err = c.Repo.Create(r.Context(), *employee)
 	if err != nil {
@@ -161,8 +159,10 @@ func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
 	pageSize, _ := strconv.ParseInt(r.URL.Query().Get("size"), 10, 64)
 
-	if page <= 0 || pageSize <= 0 {
+	if page <= 0 {
 		page = pageDefault
+	}
+	if pageSize <= 0 {
 		pageSize = pageSizeDefault
 	}
 
