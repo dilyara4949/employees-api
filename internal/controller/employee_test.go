@@ -74,6 +74,19 @@ func (e empRepoMock) GetAll(_ context.Context, page, pageSize int64) ([]domain.E
 	}, nil
 }
 
+func (e empRepoMock) GetByPosition(_ context.Context, id string) (*domain.Employee, error) {
+	if e.err != nil {
+		return nil, e.err
+	}
+
+	return &domain.Employee{
+		ID:         "id",
+		FirstName:  "first name",
+		LastName:   "last name",
+		PositionID: "position id",
+	}, nil
+}
+
 func TestEmployeesController_GetEmployee(t *testing.T) {
 	tests := map[string]struct {
 		id       string

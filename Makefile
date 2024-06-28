@@ -20,14 +20,17 @@ htmlcov:
 testcov:
 	go test -v -covermode=count -coverprofile=coverage.out ./...
 
+dockrunpq:
+	docker run -it --rm --network mynetwork postgres psql -h postgre -U postgres
+
 migrate-up:
 	migrate -database $(DB_URL) -path internal/database/migrations up
 
 migrate-down:
-	migrate -database $(DB_URL) -path internal/database/migrations down
+	migrate -database $(DB_URL) -path internal/database/postgres/migrations down
 
 migrate-test-up:
-	migrate -database $(TEST_DB_URL) -path internal/database/migrations up
+	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations up
 
 migrate-docker-down:
 	docker-compose run app migrate -path ./internal/database/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable" down
@@ -36,7 +39,7 @@ migrate-docker-up:
 	docker-compose run app migrate -path ./internal/database/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable" up
 
 migrate-test-down:
-	migrate -database $(TEST_DB_URL) -path internal/database/migrations down
+	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations down
 
 create-migration:
 	@read -p "migration name: " name; \

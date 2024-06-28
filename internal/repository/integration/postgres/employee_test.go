@@ -1,22 +1,23 @@
 //go:build integration
 // +build integration
 
-package employee
+package postgres
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	conf "github.com/dilyara4949/employees-api/internal/config"
-	"github.com/dilyara4949/employees-api/internal/database"
+	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
-	"github.com/dilyara4949/employees-api/internal/repository/position"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
+	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
 	"reflect"
 	"testing"
 )
 
-func initData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) ([]*domain.Position, []*domain.Employee, error) {
+func initDataEmp(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) ([]*domain.Position, []*domain.Employee, error) {
 	positions := []*domain.Position{
 		{
 			Name:   "name1",
@@ -64,7 +65,7 @@ func initData(posRepo domain.PositionsRepository, empRepo domain.EmployeesReposi
 	return positions, employees, errs
 }
 
-func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository, employees []*domain.Employee, positions []*domain.Position) error {
+func deleteDataEmp(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository, employees []*domain.Employee, positions []*domain.Position) error {
 	var errs error
 	for _, e := range employees {
 		err := empRepo.Delete(context.Background(), e.ID)
@@ -82,27 +83,38 @@ func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepo
 	return errs
 }
 
-func TestEmployeeRepository_Create(t *testing.T) {
+func initEmpRepo() (domain.EmployeesRepository, domain.PositionsRepository, error) {
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
+	var employeeRepo domain.EmployeesRepository
+	var positionRepo domain.PositionsRepository
+
+	db, err := postgres.ConnectPostgres(config.PostgresConfig)
 	if err != nil {
 		log.Fatalf("Connection to database failed: %s", err)
 	}
-	defer db.Close()
 
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db)
+	positionRepo = position.NewPositionsRepository(db)
+	employeeRepo = employee.NewEmployeesRepository(db)
 
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	return employeeRepo, positionRepo, nil
+}
+
+func TestEmployeeRepository_Create(t *testing.T) {
+	employeeRepo, positionRepo, err := initEmpRepo()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
@@ -138,7 +150,6 @@ func TestEmployeeRepository_Create(t *testing.T) {
 			if (err != nil) != tt.expectedErr {
 				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
 			}
-			fmt.Println(emp, err, "000000000000000000000000")
 			if emp != nil {
 				tt.employee.ID = emp.ID
 			}
@@ -154,26 +165,17 @@ func TestEmployeeRepository_Create(t *testing.T) {
 }
 
 func TestEmployeeRepository_Get(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db)
-
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
@@ -220,26 +222,17 @@ func TestEmployeeRepository_Get(t *testing.T) {
 }
 
 func TestEmployeeRepository_Update(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
 
-	db, err := database.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db)
-
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
@@ -270,8 +263,8 @@ func TestEmployeeRepository_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for _, employee := range tt.employees {
-				err := employeeRepo.Update(context.Background(), *employee)
+			for _, emp := range tt.employees {
+				err := employeeRepo.Update(context.Background(), *emp)
 				if (err != nil) != tt.expectedErr {
 					t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
 				}
@@ -281,21 +274,11 @@ func TestEmployeeRepository_Update(t *testing.T) {
 }
 
 func TestEmployeeRepository_Delete(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
-
-	db, err := database.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db)
-
-	_, emps, err := initData(positionRepo, employeeRepo)
+	_, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
@@ -322,8 +305,8 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for _, employee := range tt.employees {
-				err := employeeRepo.Delete(context.Background(), employee.ID)
+			for _, emp := range tt.employees {
+				err := employeeRepo.Delete(context.Background(), emp.ID)
 				if (err != nil) != tt.expectedErr {
 					t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
 				}
@@ -333,26 +316,16 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 }
 
 func TestEmployeeRepository_GetAll(t *testing.T) {
-	config, err := conf.NewConfig()
+	employeeRepo, positionRepo, err := initEmpRepo()
 	if err != nil {
-		log.Fatalf("Error while getting config: %s", err)
+		t.Fatal(err)
 	}
-
-	db, err := database.ConnectPostgres(config.DB)
-	if err != nil {
-		log.Fatalf("Connection to database failed: %s", err)
-	}
-	defer db.Close()
-
-	positionRepo := position.NewPositionsRepository(db)
-	employeeRepo := NewEmployeesRepository(db)
-
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}

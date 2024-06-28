@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -11,7 +12,9 @@ type Config struct {
 	RestPort       string
 	GrpcPort       string
 	Address        string
-	DB
+	DatabaseType   string
+	PostgresConfig
+	MongoConfig
 }
 
 type DB struct {
@@ -21,7 +24,21 @@ type DB struct {
 	Password string
 	Name     string
 	Timeout  int
-	MaxConn  int
+}
+
+type PostgresConfig struct {
+	DB
+	MaxConn int
+}
+
+type MongoConfig struct {
+	DB
+	Collections
+}
+
+type Collections struct {
+	Positions string
+	Employees string
 }
 
 var (
@@ -38,6 +55,14 @@ var (
 	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
 	errMaxConnType           = errors.New("DB_MAX_CONNECTIONS must be an integer")
 	errDbTimeoutType         = errors.New("DB_TIMEOUT must be an integer")
+)
+
+const (
+	positionsCollection = "positions"
+	employeesCollection = "employees"
+	PostgresDB          = "postgres"
+	MongoDB             = "mongo"
+	defaultDB           = PostgresDB
 )
 
 func NewConfig() (Config, error) {
@@ -109,22 +134,64 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errMaxConnType)
 	}
 
+	posCollection := os.Getenv("POSITIONS_COLLECTION")
+	if posCollection == "" {
+		posCollection = positionsCollection
+	}
+
+	empCollection := os.Getenv("EMPLOYEES_COLLECTION")
+	if empCollection == "" {
+		empCollection = employeesCollection
+	}
+
+	dbType := strings.ToLower(os.Getenv("DATABASE_TYPE"))
+	if dbType == "" {
+		dbType = defaultDB
+	}
+
 	if err := errors.Join(errs...); err != nil {
 		return Config{}, err
 	}
 
-	return Config{
-		jwtTokenSecret,
-		restPort,
-		grpcPort,
-		address,
-		DB{
-			DbHost,
-			DbPort,
-			DbUser,
-			DbPassword,
-			DbName,
-			DbTimeout,
+	cfg := Config{
+		JWTTokenSecret: jwtTokenSecret,
+		RestPort:       restPort,
+		GrpcPort:       grpcPort,
+		Address:        address,
+		DatabaseType:   dbType,
+	}
+
+	switch dbType {
+	case PostgresDB:
+		cfg.PostgresConfig = PostgresConfig{
+			DB{
+				DbHost,
+				DbPort,
+				DbUser,
+				DbPassword,
+				DbName,
+				DbTimeout,
+			},
 			DbMaxconn,
-		}}, nil
+		}
+	case MongoDB:
+		cfg.MongoConfig = MongoConfig{
+			DB{
+				DbHost,
+				DbPort,
+				DbUser,
+				DbPassword,
+				DbName,
+				DbTimeout,
+			},
+			Collections{
+				posCollection,
+				empCollection,
+			},
+		}
+	default:
+		return Config{}, errors.New("incorrect database")
+	}
+
+	return cfg, nil
 }

@@ -119,3 +119,22 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 	}
 	return employees, nil
 }
+
+func (e *employeeRepository) GetByPosition(ctx context.Context, position_id string) (*domain.Employee, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	stmt := "select id, first_name, last_name, position_id from employees where position_id = $1;"
+	row := e.db.QueryRowContext(ctx, stmt, position_id)
+
+	employee := domain.Employee{}
+
+	err := row.Scan(&employee.FirstName, &employee.LastName, &employee.PositionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrEmployeeNotFound
+		}
+		return nil, err
+	}
+	return &employee, nil
+}
