@@ -20,9 +20,6 @@ htmlcov:
 testcov:
 	go test -v -covermode=count -coverprofile=coverage.out ./...
 
-dockrunpq:
-	docker run -it --rm --network mynetwork postgres psql -h postgre -U postgres
-
 migrate-up:
 	migrate -database $(DB_URL) -path internal/database/migrations up
 
