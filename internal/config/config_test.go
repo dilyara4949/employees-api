@@ -15,7 +15,7 @@ func TestNewConfig(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "OK",
+			name: "OK mongo",
 			input: map[string]string{
 				"ADDRESS":            "address",
 				"REST_PORT":          "restport",
@@ -28,6 +28,7 @@ func TestNewConfig(t *testing.T) {
 				"DB_NAME":            "dbname",
 				"DB_TIMEOUT":         "1",
 				"DB_MAX_CONNECTIONS": "2",
+				"DATABASE_TYPE":      "mongo",
 			},
 			want: Config{
 				Address:        "address",
@@ -48,6 +49,42 @@ func TestNewConfig(t *testing.T) {
 						Employees: employeesCollection,
 					},
 				},
+				DatabaseType: "mongo",
+			},
+		},
+		{
+			name: "OK postgres",
+			input: map[string]string{
+				"ADDRESS":            "address",
+				"REST_PORT":          "restport",
+				"JWT_TOKEN_SECRET":   "secret",
+				"GRPC_PORT":          "qport",
+				"DB_HOST":            "dbhost",
+				"DB_PORT":            "dbport",
+				"DB_USER":            "dbuser",
+				"DB_PASSWORD":        "dbpass",
+				"DB_NAME":            "dbname",
+				"DB_TIMEOUT":         "1",
+				"DB_MAX_CONNECTIONS": "2",
+				"DATABASE_TYPE":      "postgres",
+			},
+			want: Config{
+				Address:        "address",
+				RestPort:       "restport",
+				JWTTokenSecret: "secret",
+				GrpcPort:       "qport",
+				PostgresConfig: PostgresConfig{
+					DB{
+						Host:     "dbhost",
+						Port:     "dbport",
+						User:     "dbuser",
+						Password: "dbpass",
+						Name:     "dbname",
+						Timeout:  1,
+					},
+					2,
+				},
+				DatabaseType: "postgres",
 			},
 		},
 		{

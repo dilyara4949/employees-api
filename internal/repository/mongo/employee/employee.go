@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,12 +15,6 @@ import (
 type employeeRepository struct {
 	employeeCollection *mongo.Collection
 	positionCollection *mongo.Collection
-}
-
-type employeeMongo struct {
-	domain.Employee
-	CreatedAt time.Time `bson:"created_at"`
-	UpdatedAt time.Time `bson:"updated_at"`
 }
 
 func NewEmployeesRepository(db *mongo.Database, emp, pos string) domain.EmployeesRepository {
@@ -43,9 +38,14 @@ func (e *employeeRepository) Create(ctx context.Context, employee domain.Employe
 		return nil, err
 	}
 
-	_, err := e.employeeCollection.InsertOne(ctx, employeeMongo{
-		Employee:  employee,
-		CreatedAt: time.Now(),
+	employee.ID = uuid.New().String()
+
+	_, err := e.employeeCollection.InsertOne(ctx, bson.M{
+		"id":          employee.ID,
+		"first_name":  employee.FirstName,
+		"last_name":   employee.LastName,
+		"position_id": employee.PositionID,
+		"created_at":  time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -72,9 +72,12 @@ func (e *employeeRepository) Update(ctx context.Context, employee domain.Employe
 	defer cancel()
 
 	update := bson.M{
-		"$set": employeeMongo{
-			Employee:  employee,
-			UpdatedAt: time.Now(),
+		"$set": bson.M{
+			"id":          employee.ID,
+			"first_name":  employee.FirstName,
+			"last_name":   employee.LastName,
+			"position_id": employee.PositionID,
+			"created_at":  time.Now(),
 		},
 	}
 

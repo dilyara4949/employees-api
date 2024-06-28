@@ -142,7 +142,7 @@ func NewConfig() (Config, error) {
 		empCollection = employeesCollection
 	}
 
-	dbType := os.Getenv("DATABASE_TYPE")
+	dbType := strings.ToLower(os.Getenv("DATABASE_TYPE"))
 	if dbType == "" {
 		dbType = defaultDB
 	}
@@ -159,7 +159,8 @@ func NewConfig() (Config, error) {
 		DatabaseType:   dbType,
 	}
 
-	if strings.Contains(DbName, "postgres") {
+	switch dbType {
+	case "postgres":
 		cfg.PostgresConfig = PostgresConfig{
 			DB{
 				DbHost,
@@ -171,7 +172,7 @@ func NewConfig() (Config, error) {
 			},
 			DbMaxconn,
 		}
-	} else if strings.Contains(DbName, "mongo") {
+	case "mongo":
 		cfg.MongoConfig = MongoConfig{
 			DB{
 				DbHost,
@@ -186,7 +187,7 @@ func NewConfig() (Config, error) {
 				empCollection,
 			},
 		}
-	} else {
+	default:
 		return Config{}, errors.New("incorrect database")
 	}
 

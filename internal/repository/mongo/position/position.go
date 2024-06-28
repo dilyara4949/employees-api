@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/dilyara4949/employees-api/internal/domain"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,16 +15,6 @@ import (
 type positionsRepository struct {
 	positionCollection *mongo.Collection
 	employeeCollection *mongo.Collection
-}
-
-type EmployeesRepository interface {
-	GetByPosition(ctx context.Context, id string) (*domain.Employee, error)
-}
-
-type positionMongo struct {
-	domain.Position
-	CreatedAt time.Time `bson:"created_at"`
-	UpdatedAt time.Time `bson:"updated_at"`
 }
 
 func NewPositionsRepository(db *mongo.Database, pos, emp string) domain.PositionsRepository {
@@ -42,14 +33,18 @@ func (p *positionsRepository) Create(ctx context.Context, position domain.Positi
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
+	position.ID = uuid.New().String()
+
 	err := p.positionCollection.FindOne(ctx, bson.M{"id": position.ID}).Decode(position)
 	if err == nil {
 		return nil, errors.New("position already exists")
 	}
 
-	_, err = p.positionCollection.InsertOne(ctx, positionMongo{
-		Position:  position,
-		CreatedAt: time.Now(),
+	_, err = p.positionCollection.InsertOne(ctx, bson.M{
+		"id":         position.ID,
+		"name":       position.Name,
+		"salary":     position.Salary,
+		"created_at": time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -76,9 +71,11 @@ func (p *positionsRepository) Update(ctx context.Context, position domain.Positi
 	defer cancel()
 
 	update := bson.M{
-		"$set": positionMongo{
-			Position:  position,
-			UpdatedAt: time.Now(),
+		"$set": bson.M{
+			"id":         position.ID,
+			"name":       position.Name,
+			"salary":     position.Salary,
+			"updated_at": time.Now(),
 		},
 	}
 
