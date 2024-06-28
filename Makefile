@@ -44,6 +44,3 @@ migrate-test-down:
 create-migration:
 	@read -p "migration name: " name; \
 	migrate create -ext sql -dir internal/database/migrations -seq $$name
-
-create-cont:
-	 docker run --name postgre --network mynetwork -e POSTGRES_PASSWORD=12345 -p 5432:5432 -d postgres
