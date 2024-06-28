@@ -20,101 +20,70 @@ import (
 	"testing"
 )
 
-func InitDataEmployees(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
-	positions := []domain.Position{
+func initData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) ([]*domain.Position, []*domain.Employee, error) {
+	positions := []*domain.Position{
 		{
-			ID:     "1",
 			Name:   "name1",
 			Salary: 1,
 		},
 		{
-			ID:     "2",
 			Name:   "name2",
 			Salary: 2,
 		},
 		{
-			ID:     "3",
 			Name:   "name3",
 			Salary: 3,
 		},
 	}
 
-	employees := []domain.Employee{
+	employees := []*domain.Employee{
 		{
-			ID:         "1",
-			FirstName:  "firstname1",
-			LastName:   "lastname1",
-			PositionID: "1",
+			FirstName: "firstname1",
+			LastName:  "lastname1",
 		},
 		{
-			ID:         "2",
-			FirstName:  "firstname2",
-			LastName:   "lastname2",
-			PositionID: "2",
+			FirstName: "firstname2",
+			LastName:  "lastname2",
 		},
 		{
-			ID:         "3",
-			FirstName:  "firstname3",
-			LastName:   "lastname3",
-			PositionID: "3",
+			FirstName: "firstname3",
+			LastName:  "lastname3",
 		},
 	}
 
-	for _, p := range positions {
-		_, _ = posRepo.Create(context.Background(), p)
+	var errs, err error
+
+	for i := 0; i < len(positions); i++ {
+		positions[i], err = posRepo.Create(context.Background(), *positions[i])
+		if err != nil {
+			errs = errors.Join(errs, err)
+		}
+
+		employees[i].PositionID = positions[i].ID
+		employees[i], err = empRepo.Create(context.Background(), *employees[i])
+		if err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
-	for _, e := range employees {
-		_, _ = empRepo.Create(context.Background(), e)
-	}
+	return positions, employees, errs
 }
 
-func DeleteDataEmployees(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) {
-	positions := []domain.Position{
-		{
-			ID:     "1",
-			Name:   "name1",
-			Salary: 1,
-		},
-		{
-			ID:     "2",
-			Name:   "name2",
-			Salary: 2,
-		},
-		{
-			ID:     "3",
-			Name:   "name3",
-			Salary: 3,
-		},
-	}
-
-	employees := []domain.Employee{
-		{
-			ID:         "1",
-			FirstName:  "firstname1",
-			LastName:   "lastname1",
-			PositionID: "1",
-		},
-		{
-			ID:         "2",
-			FirstName:  "firstname2",
-			LastName:   "lastname2",
-			PositionID: "2",
-		},
-		{
-			ID:         "3",
-			FirstName:  "firstname3",
-			LastName:   "lastname3",
-			PositionID: "3",
-		},
-	}
-
+func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository, employees []*domain.Employee, positions []*domain.Position) error {
+	var errs error
 	for _, e := range employees {
-		_ = empRepo.Delete(context.Background(), e.ID)
+		err := empRepo.Delete(context.Background(), e.ID)
+		if err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
 
 	for _, p := range positions {
-		_ = posRepo.Delete(context.Background(), p.ID)
+		err := posRepo.Delete(context.Background(), p.ID)
+		if err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
+	return errs
 }
 
 func initEmpRepo() (domain.EmployeesRepository, domain.PositionsRepository, error) {
@@ -156,8 +125,16 @@ func TestEmployeeRepository_Create(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	InitDataEmployees(positionRepo, employeeRepo)
-	defer DeleteDataEmployees(positionRepo, employeeRepo)
+	poss, emps, err := initData(positionRepo, employeeRepo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		if err != nil {
+			t.Errorf("error at deleting helper data: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name        string
@@ -167,23 +144,10 @@ func TestEmployeeRepository_Create(t *testing.T) {
 		{
 			name: "OK",
 			employee: domain.Employee{
-
-				ID:         "4",
 				FirstName:  "firstname4",
 				LastName:   "lastname4",
-				PositionID: "1",
+				PositionID: poss[0].ID,
 			},
-		},
-		{
-			name: "employee already exists",
-			employee: domain.Employee{
-
-				ID:         "1",
-				FirstName:  "firstname1",
-				LastName:   "lastname1",
-				PositionID: "1",
-			},
-			expectedErr: true,
 		},
 		{
 			name: "position not found",
@@ -196,20 +160,22 @@ func TestEmployeeRepository_Create(t *testing.T) {
 			expectedErr: true,
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			emp, err := employeeRepo.Create(context.Background(), tt.employee)
-			fmt.Println(err)
 			if (err != nil) != tt.expectedErr {
 				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
 			}
-
-			if emp != nil && !reflect.DeepEqual(*emp, tt.employee) {
-				t.Errorf("expected: %v, got: %v", tt.employee, &emp)
+			if emp != nil {
+				tt.employee.ID = emp.ID
 			}
-
-			_ = employeeRepo.Delete(context.Background(), tt.employee.ID)
+			if emp != nil && !reflect.DeepEqual(*emp, tt.employee) {
+				t.Errorf("expected: %v, got: %v", tt.employee, *emp)
+			}
+			err = employeeRepo.Delete(context.Background(), tt.employee.ID)
+			if err != nil {
+				fmt.Println("error at deleting created employee: v", err, tt.employee, emp)
+			}
 		})
 	}
 }
@@ -220,30 +186,35 @@ func TestEmployeeRepository_Get(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	InitDataEmployees(positionRepo, employeeRepo)
-	defer DeleteDataEmployees(positionRepo, employeeRepo)
+	poss, emps, err := initData(positionRepo, employeeRepo)
+	if err != nil {
+		t.Errorf("error to init data: %v", err)
+	}
+	defer func() {
+		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		if err != nil {
+			t.Errorf("error at deleting helper data: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name        string
-		employee    domain.Employee
+		employees   []*domain.Employee
 		expectedErr bool
 	}{
 		{
-			name: "OK",
-			employee: domain.Employee{
-				ID:         "1",
-				FirstName:  "firstname1",
-				LastName:   "lastname1",
-				PositionID: "1",
-			},
+			name:      "OK",
+			employees: emps,
 		},
 		{
 			name: "employee not found",
-			employee: domain.Employee{
-				ID:         "5",
-				FirstName:  "firstname1",
-				LastName:   "lastname1",
-				PositionID: "1",
+			employees: []*domain.Employee{
+				{
+					ID:         "5",
+					FirstName:  "firstname1",
+					LastName:   "lastname1",
+					PositionID: "1",
+				},
 			},
 			expectedErr: true,
 		},
@@ -252,13 +223,15 @@ func TestEmployeeRepository_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			emp, err := employeeRepo.Get(context.Background(), tt.employee.ID)
-			if (err != nil) != tt.expectedErr {
-				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
-			}
+			for _, employee := range tt.employees {
+				emp, err := employeeRepo.Get(context.Background(), employee.ID)
+				if (err != nil) != tt.expectedErr {
+					t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+				}
 
-			if !tt.expectedErr && !reflect.DeepEqual(*emp, tt.employee) {
-				t.Errorf("expected: %v, got: %v", tt.employee, *emp)
+				if !tt.expectedErr && !reflect.DeepEqual(emp, employee) {
+					t.Errorf("expected: %v, got: %v", employee, *emp)
+				}
 			}
 		})
 	}
@@ -270,30 +243,35 @@ func TestEmployeeRepository_Update(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	InitDataEmployees(positionRepo, employeeRepo)
-	defer DeleteDataEmployees(positionRepo, employeeRepo)
+	poss, emps, err := initData(positionRepo, employeeRepo)
+	if err != nil {
+		t.Errorf("error to init data: %v", err)
+	}
+	defer func() {
+		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		if err != nil {
+			t.Errorf("error at deleting helper data: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name        string
-		employee    domain.Employee
+		employees   []*domain.Employee
 		expectedErr bool
 	}{
 		{
-			name: "OK",
-			employee: domain.Employee{
-				ID:         "1",
-				FirstName:  "firstname1qw",
-				LastName:   "lastname1qw",
-				PositionID: "1",
-			},
+			name:      "OK",
+			employees: emps,
 		},
 		{
 			name: "employee not found",
-			employee: domain.Employee{
-				ID:         "5",
-				FirstName:  "firstname1",
-				LastName:   "lastname1",
-				PositionID: "1",
+			employees: []*domain.Employee{
+				{
+					ID:         "5",
+					FirstName:  "firstname1",
+					LastName:   "lastname1",
+					PositionID: "1",
+				},
 			},
 			expectedErr: true,
 		},
@@ -301,9 +279,11 @@ func TestEmployeeRepository_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := employeeRepo.Update(context.Background(), tt.employee)
-			if (err != nil) != tt.expectedErr {
-				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+			for _, emp := range tt.employees {
+				err := employeeRepo.Update(context.Background(), *emp)
+				if (err != nil) != tt.expectedErr {
+					t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+				}
 			}
 		})
 	}
@@ -314,25 +294,26 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	InitDataEmployees(positionRepo, employeeRepo)
-	defer DeleteDataEmployees(positionRepo, employeeRepo)
+	_, emps, err := initData(positionRepo, employeeRepo)
+	if err != nil {
+		t.Errorf("error to init data: %v", err)
+	}
 
 	tests := []struct {
 		name        string
-		employee    domain.Employee
+		employees   []*domain.Employee
 		expectedErr bool
 	}{
 		{
-			name: "OK",
-			employee: domain.Employee{
-				ID: "1",
-			},
+			name:      "OK",
+			employees: emps,
 		},
 		{
 			name: "employee not found",
-			employee: domain.Employee{
-				ID: "5",
+			employees: []*domain.Employee{
+				{
+					ID: "5",
+				},
 			},
 			expectedErr: true,
 		},
@@ -340,9 +321,11 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := employeeRepo.Delete(context.Background(), tt.employee.ID)
-			if (err != nil) != tt.expectedErr {
-				t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+			for _, emp := range tt.employees {
+				err := employeeRepo.Delete(context.Background(), emp.ID)
+				if (err != nil) != tt.expectedErr {
+					t.Errorf("expected error: %v, got: %s", tt.expectedErr, err)
+				}
 			}
 		})
 	}
@@ -353,9 +336,16 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	InitDataEmployees(positionRepo, employeeRepo)
-	defer DeleteDataEmployees(positionRepo, employeeRepo)
+	poss, emps, err := initData(positionRepo, employeeRepo)
+	if err != nil {
+		t.Errorf("error to init data: %v", err)
+	}
+	defer func() {
+		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		if err != nil {
+			t.Errorf("error at deleting helper data: %v", err)
+		}
+	}()
 
 	tests := []struct {
 		name     string
@@ -368,18 +358,8 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 			page:     1,
 			pageSize: 2,
 			expected: []domain.Employee{
-				{
-					ID:         "1",
-					FirstName:  "firstname1",
-					LastName:   "lastname1",
-					PositionID: "1",
-				},
-				{
-					ID:         "2",
-					FirstName:  "firstname2",
-					LastName:   "lastname2",
-					PositionID: "2",
-				},
+				*emps[0],
+				*emps[1],
 			},
 		},
 		{
@@ -387,12 +367,7 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 			page:     2,
 			pageSize: 2,
 			expected: []domain.Employee{
-				{
-					ID:         "3",
-					FirstName:  "firstname3",
-					LastName:   "lastname3",
-					PositionID: "3",
-				},
+				*emps[2],
 			},
 		},
 		{
