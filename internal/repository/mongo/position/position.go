@@ -20,6 +20,12 @@ type EmployeesRepository interface {
 	GetByPosition(ctx context.Context, id string) (*domain.Employee, error)
 }
 
+type positionMongo struct {
+	domain.Position
+	CreatedAt time.Time `bson:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at"`
+}
+
 func NewPositionsRepository(db *mongo.Database, pos, emp string) domain.PositionsRepository {
 	return &positionsRepository{
 		employeeCollection: db.Collection(emp),
@@ -41,11 +47,9 @@ func (p *positionsRepository) Create(ctx context.Context, position domain.Positi
 		return nil, errors.New("position already exists")
 	}
 
-	_, err = p.positionCollection.InsertOne(ctx, bson.M{
-		"id":         position.ID,
-		"name":       position.Name,
-		"salary":     position.Salary,
-		"created_at": time.Now(),
+	_, err = p.positionCollection.InsertOne(ctx, positionMongo{
+		Position:  position,
+		CreatedAt: time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -72,10 +76,9 @@ func (p *positionsRepository) Update(ctx context.Context, position domain.Positi
 	defer cancel()
 
 	update := bson.M{
-		"$set": bson.M{
-			"name":       position.Name,
-			"salary":     position.Salary,
-			"updated_at": time.Now(),
+		"$set": positionMongo{
+			Position:  position,
+			UpdatedAt: time.Now(),
 		},
 	}
 

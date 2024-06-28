@@ -16,6 +16,12 @@ type employeeRepository struct {
 	positionCollection *mongo.Collection
 }
 
+type employeeMongo struct {
+	domain.Employee
+	CreatedAt time.Time `bson:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at"`
+}
+
 func NewEmployeesRepository(db *mongo.Database, emp, pos string) domain.EmployeesRepository {
 	return &employeeRepository{
 		employeeCollection: db.Collection(emp),
@@ -37,12 +43,9 @@ func (e *employeeRepository) Create(ctx context.Context, employee domain.Employe
 		return nil, err
 	}
 
-	_, err := e.employeeCollection.InsertOne(ctx, bson.M{
-		"id":          employee.ID,
-		"first_name":  employee.FirstName,
-		"last_name":   employee.LastName,
-		"position_id": employee.PositionID,
-		"created_at":  time.Now(),
+	_, err := e.employeeCollection.InsertOne(ctx, employeeMongo{
+		Employee:  employee,
+		CreatedAt: time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -69,11 +72,9 @@ func (e *employeeRepository) Update(ctx context.Context, employee domain.Employe
 	defer cancel()
 
 	update := bson.M{
-		"$set": bson.M{
-			"first_name":  employee.FirstName,
-			"last_name":   employee.LastName,
-			"position_id": employee.PositionID,
-			"updated_at":  time.Now(),
+		"$set": employeeMongo{
+			Employee:  employee,
+			UpdatedAt: time.Now(),
 		},
 	}
 
