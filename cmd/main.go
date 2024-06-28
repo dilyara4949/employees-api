@@ -34,7 +34,7 @@ func main() {
 	var employeeRepo domain.EmployeesRepository
 
 	switch config.DatabaseType {
-	case "postgres":
+	case conf.PostgresDB:
 		db, err := postgres.ConnectPostgres(config.PostgresConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)
@@ -43,7 +43,7 @@ func main() {
 
 		positionRepo = position.NewPositionsRepository(db)
 		employeeRepo = employee.NewEmployeesRepository(db)
-	case "mongo":
+	case conf.MongoDB:
 		db, err := mongoDB.ConnectMongo(config.MongoConfig)
 		if err != nil {
 			log.Fatalf("Connection to database failed: %s", err)

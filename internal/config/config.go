@@ -60,7 +60,9 @@ var (
 const (
 	positionsCollection = "positions"
 	employeesCollection = "employees"
-	defaultDB           = "postgres"
+	PostgresDB          = "postgres"
+	MongoDB             = "mongo"
+	defaultDB           = PostgresDB
 )
 
 func NewConfig() (Config, error) {
@@ -160,7 +162,7 @@ func NewConfig() (Config, error) {
 	}
 
 	switch dbType {
-	case "postgres":
+	case PostgresDB:
 		cfg.PostgresConfig = PostgresConfig{
 			DB{
 				DbHost,
@@ -172,7 +174,7 @@ func NewConfig() (Config, error) {
 			},
 			DbMaxconn,
 		}
-	case "mongo":
+	case MongoDB:
 		cfg.MongoConfig = MongoConfig{
 			DB{
 				DbHost,

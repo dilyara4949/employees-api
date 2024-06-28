@@ -1,18 +1,15 @@
 //go:build integration
 // +build integration
 
-package integration
+package postgres
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	conf "github.com/dilyara4949/employees-api/internal/config"
-	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
 	"github.com/dilyara4949/employees-api/internal/domain"
-	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
-	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/position"
 	"log"
@@ -20,7 +17,7 @@ import (
 	"testing"
 )
 
-func initData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) ([]*domain.Position, []*domain.Employee, error) {
+func initDataEmp(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository) ([]*domain.Position, []*domain.Employee, error) {
 	positions := []*domain.Position{
 		{
 			Name:   "name1",
@@ -68,7 +65,7 @@ func initData(posRepo domain.PositionsRepository, empRepo domain.EmployeesReposi
 	return positions, employees, errs
 }
 
-func DeleteData(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository, employees []*domain.Employee, positions []*domain.Position) error {
+func deleteDataEmp(posRepo domain.PositionsRepository, empRepo domain.EmployeesRepository, employees []*domain.Employee, positions []*domain.Position) error {
 	var errs error
 	for _, e := range employees {
 		err := empRepo.Delete(context.Background(), e.ID)
@@ -95,27 +92,14 @@ func initEmpRepo() (domain.EmployeesRepository, domain.PositionsRepository, erro
 	var employeeRepo domain.EmployeesRepository
 	var positionRepo domain.PositionsRepository
 
-	switch config.DatabaseType {
-	case "postgres":
-		db, err := postgres.ConnectPostgres(config.PostgresConfig)
-		if err != nil {
-			log.Fatalf("Connection to database failed: %s", err)
-		}
-
-		positionRepo = position.NewPositionsRepository(db)
-		employeeRepo = employee.NewEmployeesRepository(db, positionRepo)
-
-	case "mongo":
-		db, err := mongoDB.ConnectMongo(config.MongoConfig)
-		if err != nil {
-			log.Fatalf("Connection to database failed: %s", err)
-		}
-
-		positionRepo = mongoposition.NewPositionsRepository(db, config.MongoConfig.Collections.Positions, config.MongoConfig.Collections.Employees)
-		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.MongoConfig.Collections.Employees, config.MongoConfig.Collections.Positions)
-	default:
-		return nil, nil, errors.New("Incorrect database given for tests")
+	db, err := postgres.ConnectPostgres(config.PostgresConfig)
+	if err != nil {
+		log.Fatalf("Connection to database failed: %s", err)
 	}
+
+	positionRepo = position.NewPositionsRepository(db)
+	employeeRepo = employee.NewEmployeesRepository(db)
+
 	return employeeRepo, positionRepo, nil
 }
 
@@ -125,12 +109,12 @@ func TestEmployeeRepository_Create(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
@@ -186,12 +170,12 @@ func TestEmployeeRepository_Get(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
@@ -243,12 +227,12 @@ func TestEmployeeRepository_Update(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
@@ -294,7 +278,7 @@ func TestEmployeeRepository_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, emps, err := initData(positionRepo, employeeRepo)
+	_, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
@@ -336,12 +320,12 @@ func TestEmployeeRepository_GetAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	poss, emps, err := initData(positionRepo, employeeRepo)
+	poss, emps, err := initDataEmp(positionRepo, employeeRepo)
 	if err != nil {
 		t.Errorf("error to init data: %v", err)
 	}
 	defer func() {
-		err := DeleteData(positionRepo, employeeRepo, emps, poss)
+		err := deleteDataEmp(positionRepo, employeeRepo, emps, poss)
 		if err != nil {
 			t.Errorf("error at deleting helper data: %v", err)
 		}
