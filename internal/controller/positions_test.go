@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,11 +18,15 @@ type posRepoMock struct {
 	err error
 }
 
-func (p posRepoMock) Create(_ context.Context, position *domain.Position) error {
+func (p posRepoMock) Create(_ context.Context, position domain.Position) (*domain.Position, error) {
 	if p.err != nil {
-		return p.err
+		return nil, p.err
 	}
-	return nil
+	return &domain.Position{
+		ID:     "id",
+		Name:   "name",
+		Salary: 100,
+	}, nil
 }
 
 func (p posRepoMock) Get(_ context.Context, id string) (*domain.Position, error) {
@@ -49,8 +54,10 @@ func (p posRepoMock) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-func (p posRepoMock) GetAll(_ context.Context) ([]domain.Position, error) {
+func (p posRepoMock) GetAll(_ context.Context, page, pageSize int64) ([]domain.Position, error) {
 	if p.err != nil {
+
+		log.Println(p.err)
 		return nil, p.err
 	}
 
@@ -278,7 +285,6 @@ func TestPositionsController_UpdatePosition(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fmt.Println(string(response), tt.expected)
 			if res := string(response); res != tt.expected {
 				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
 			}

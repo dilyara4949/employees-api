@@ -27,8 +27,8 @@ func logCorrelationIDTimer(endpoint http.HandlerFunc, JWTTokenSecret string) htt
 	auth := middleware.NewJWTAuth(JWTTokenSecret)
 	middlewares := []middleware.Middleware{
 		auth.Auth(),
-		middleware.Logger(),
 		middleware.Timer(),
+		middleware.Logger(),
 		middleware.CorrelationIDMiddleware(),
 	}
 

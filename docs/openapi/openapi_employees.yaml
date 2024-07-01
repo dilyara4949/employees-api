@@ -8,6 +8,15 @@ paths:
       description: "get list of employees"
       tags:
         - employees
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: size
+          schema:
+            type: integer
       responses:
         '200':
           description: "successfully returned a list of employees"
@@ -129,6 +138,15 @@ paths:
       description: "get list of positions"
       tags:
         - positions
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: size
+          schema:
+            type: integer
       responses:
         '200':
           description: "successfully returned a list of employees"
@@ -269,7 +287,5 @@ components:
         salary:
           type: number
     ErrorDetail:
-      type: object
-      properties:
-        message:
-          type: string
+      type: string
+      description: error message
