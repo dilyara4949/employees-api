@@ -302,7 +302,7 @@ func TestPositionsController_GetAllPositions(t *testing.T) {
 			repo:     posRepoMock{},
 		},
 		"error": {
-			expected: "error at getting all positions\nnull",
+			expected: "error at getting all positions\n",
 			repo:     posRepoMock{err: errors.New("error")},
 		},
 	}

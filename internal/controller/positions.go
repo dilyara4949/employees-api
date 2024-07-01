@@ -163,6 +163,7 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 	positions, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error at getting all positions", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	response, err := json.Marshal(positions)
