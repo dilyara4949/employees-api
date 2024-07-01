@@ -17,7 +17,7 @@ func NewPositionsController(repo domain.PositionsRepository) *PositionsControlle
 
 func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		errorHandler(w, r, &HTTPError{Detail: "invalid method at get position", Status: http.StatusMethodNotAllowed})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid method at get position", Status: http.StatusMethodNotAllowed})
 		return
 	}
 
@@ -25,13 +25,13 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 	position, err := c.Repo.Get(r.Context(), positionID)
 
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error getting position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
 	response, err := json.Marshal(position)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
@@ -42,30 +42,30 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 
 func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		errorHandler(w, r, &HTTPError{Detail: "invalid method at create position", Status: http.StatusMethodNotAllowed})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid method at create position", Status: http.StatusMethodNotAllowed})
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
 
 	var position domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
 
 	if err = c.Repo.Create(r.Context(), &position); err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
 	response, err := json.Marshal(position)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
@@ -76,7 +76,7 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 
 func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
-		errorHandler(w, r, &HTTPError{Detail: "invalid method at delete position", Status: http.StatusMethodNotAllowed})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid method at delete position", Status: http.StatusMethodNotAllowed})
 		return
 	}
 
@@ -84,7 +84,7 @@ func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Requ
 	err := c.Repo.Delete(r.Context(), positionID)
 
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error deleting position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error deleting position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
@@ -93,37 +93,37 @@ func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Requ
 
 func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
-		errorHandler(w, r, &HTTPError{Detail: "invalid method at update position", Status: http.StatusMethodNotAllowed})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid method at update position", Status: http.StatusMethodNotAllowed})
 		return
 	}
 
 	positionID := r.PathValue("id")
 	if positionID == "" {
-		errorHandler(w, r, &HTTPError{Detail: "missing position ID", Status: http.StatusBadRequest})
+		ErrorHandler(w, r, &HTTPError{Detail: "missing position ID", Status: http.StatusBadRequest})
 		return
 	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error reading request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
 
 	var position domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
 
 	position.ID = positionID
 	if err := c.Repo.Update(r.Context(), position); err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error updating position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error updating position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
 	response, err := json.Marshal(position)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error at marshal position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
@@ -134,18 +134,18 @@ func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Requ
 
 func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		errorHandler(w, r, &HTTPError{Detail: "invalid method at get all positions", Status: http.StatusMethodNotAllowed})
+		ErrorHandler(w, r, &HTTPError{Detail: "invalid method at get all positions", Status: http.StatusMethodNotAllowed})
 		return
 	}
 
 	positions, err := c.Repo.GetAll(r.Context())
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError})
+		ErrorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError})
 	}
 
 	response, err := json.Marshal(positions)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at marshal positions", Status: http.StatusInternalServerError, Cause: err})
+		ErrorHandler(w, r, &HTTPError{Detail: "error at marshal positions", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
 
