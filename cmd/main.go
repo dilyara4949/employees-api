@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/dilyara4949/employees-api/internal/database/redis"
 	"log"
 	"net"
 	"net/http"
@@ -24,6 +25,11 @@ func main() {
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
+	}
+
+	cache, err := redis.ConnectRedis(config.RedisConfig)
+	if err != nil {
+		log.Fatalf("error to connect redis: %v", err)
 	}
 
 	go func() {
@@ -58,7 +64,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	route.SetUpRouter(employeeController, positionController, config, mux)
+	route.SetUpRouter(employeeController, positionController, config, mux, cache)
 
 	log.Printf("Starting server on :%s", config.RestPort)
 
