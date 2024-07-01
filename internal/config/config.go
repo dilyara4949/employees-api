@@ -63,58 +63,72 @@ const (
 	PostgresDB          = "postgres"
 	MongoDB             = "mongo"
 	defaultDB           = PostgresDB
+	jwtTokenSecretEnv   = "JWT_TOKEN_SECRET"
+	restPortEnv         = "REST_PORT"
+	grpcPortEnv         = "GRPC_PORT"
+	addressEnv          = "ADDRESS"
+	databaseTypeEnv     = "DATABASE_TYPE"
+	dbHostEnv           = "DB_HOST"
+	dbPortEnv           = "DB_PORT"
+	dbUserEnv           = "DB_USER"
+	dbPasswordEnv       = "DB_PASSWORD"
+	dbNameEnv           = "DB_NAME"
+	dbTimeoutEnv        = "DB_TIMEOUT"
+	dbMaxConnEnv        = "DB_MAX_CONNECTIONS"
+	posCollectionEnv    = "POSITIONS_COLLECTION"
+	empCollectionEnv    = "EMPLOYEES_COLLECTION"
 )
 
 func NewConfig() (Config, error) {
 
 	errs := make([]error, 0)
 
-	jwtTokenSecret := os.Getenv("JWT_TOKEN_SECRET")
+	jwtTokenSecret := os.Getenv(jwtTokenSecretEnv)
 	if jwtTokenSecret == "" {
 		errs = append(errs, errMissingJWTTokenSecret)
 	}
 
-	restPort := os.Getenv("REST_PORT")
+	restPort := os.Getenv(restPortEnv)
 	if restPort == "" {
 		errs = append(errs, errMissingRestPort)
 	}
 
-	grpcPort := os.Getenv("GRPC_PORT")
+	grpcPort := os.Getenv(grpcPortEnv)
 	if grpcPort == "" {
 		errs = append(errs, errMissingGrpcPort)
 	}
 
-	address := os.Getenv("ADDRESS")
+	address := os.Getenv(addressEnv)
 	if address == "" {
 		errs = append(errs, errMissingAddress)
 	}
 
-	DbHost := os.Getenv("DB_HOST")
+	DbHost := os.Getenv(dbHostEnv)
 	if DbHost == "" {
 		errs = append(errs, errMissingDbHost)
 	}
 
-	DbPort := os.Getenv("DB_PORT")
+	DbPort := os.Getenv(dbPortEnv)
 	if DbPort == "" {
 		errs = append(errs, errMissingDbPort)
 	}
 
-	DbUser := os.Getenv("DB_USER")
+	DbUser := os.Getenv(dbUserEnv)
 	if DbUser == "" {
 		errs = append(errs, errMissingDbUser)
 	}
 
-	DbPassword := os.Getenv("DB_PASSWORD")
+	DbPassword := os.Getenv(dbPasswordEnv)
 	if DbPassword == "" {
 		errs = append(errs, errMissingDbPassword)
 	}
 
-	DbName := os.Getenv("DB_NAME")
+	DbName := os.Getenv(dbNameEnv)
 	if DbName == "" {
 		errs = append(errs, errMissingDbName)
 	}
 
-	DbTimeoutStr := os.Getenv("DB_TIMEOUT")
+	DbTimeoutStr := os.Getenv(dbTimeoutEnv)
 	if DbTimeoutStr == "" {
 		errs = append(errs, errMissingDbTimeout)
 	}
@@ -124,7 +138,7 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errDbTimeoutType)
 	}
 
-	DbMaxConnStr := os.Getenv("DB_MAX_CONNECTIONS")
+	DbMaxConnStr := os.Getenv(dbMaxConnEnv)
 	if DbMaxConnStr == "" {
 		errs = append(errs, errMissingDbMaxConn)
 	}
@@ -134,17 +148,17 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errMaxConnType)
 	}
 
-	posCollection := os.Getenv("POSITIONS_COLLECTION")
+	posCollection := os.Getenv(posCollectionEnv)
 	if posCollection == "" {
 		posCollection = positionsCollection
 	}
 
-	empCollection := os.Getenv("EMPLOYEES_COLLECTION")
+	empCollection := os.Getenv(empCollectionEnv)
 	if empCollection == "" {
 		empCollection = employeesCollection
 	}
 
-	dbType := strings.ToLower(os.Getenv("DATABASE_TYPE"))
+	dbType := strings.ToLower(os.Getenv(databaseTypeEnv))
 	if dbType == "" {
 		dbType = defaultDB
 	}
