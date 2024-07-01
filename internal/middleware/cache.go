@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/redis/go-redis/v9"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -23,11 +24,14 @@ func Cache(cache *redis.Client, ttl time.Duration) Middleware {
 
 			res, err := cache.Get(r.Context(), id).Result()
 			if err == nil {
+				log.Println("Cache hit for key:", id)
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write([]byte(res))
 				return
 			}
+
+			log.Println("Cache miss for key:", id)
 
 			rec := &responseRecorder{ResponseWriter: w, statusCode: http.StatusOK}
 			h.ServeHTTP(rec, r)

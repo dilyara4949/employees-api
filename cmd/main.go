@@ -27,6 +27,11 @@ func main() {
 		log.Fatalf("Error while getting config: %s", err)
 	}
 
+	cache, err := redis.ConnectRedis(config.RedisConfig)
+	if err != nil {
+		log.Fatalf("error to connect redis: %v", err)
+	}
+
 	go func() {
 		positionServer := server.NewPositionServer(positionRepo)
 		employeeServer := server.NewEmployeeServer(employeeRepo)
@@ -56,11 +61,6 @@ func main() {
 
 	positionController := controller.NewPositionsController(positionRepo)
 	employeeController := controller.NewEmployeesController(employeeRepo)
-
-	cache, err := redis.ConnectRedis(config.RedisConfig)
-	if err != nil {
-		log.Fatalf("error to connect redis: %v", err)
-	}
 
 	mux := http.NewServeMux()
 

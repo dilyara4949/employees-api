@@ -278,7 +278,7 @@ func TestPositionsController_UpdatePosition(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fmt.Println(string(response), tt.expected)
+
 			if res := string(response); res != tt.expected {
 				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
 			}
