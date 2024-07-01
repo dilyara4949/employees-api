@@ -19,7 +19,7 @@ func (e *HTTPError) Error() string {
 	return e.Detail + " : " + e.Cause.Error()
 }
 
-func ErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
+func errorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	if err != nil {
 		correlationId := r.Context().Value(middleware.CorrelationID)
 		if correlationId == nil {

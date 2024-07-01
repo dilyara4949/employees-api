@@ -11,7 +11,7 @@ import (
 func Cache(cache *redis.Client, ttl time.Duration) Middleware {
 	return func(h http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
+			if r.Method != http.MethodGet {
 				h.ServeHTTP(w, r)
 				return
 			}
