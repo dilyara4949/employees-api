@@ -22,6 +22,15 @@ func Cache(cache *redis.Client, ttl time.Duration) Middleware {
 				return
 			}
 
+			if strings.Contains(r.URL.Path, "/positions/") {
+				id = "position-" + id
+			} else if strings.Contains(r.URL.Path, "/employees/") {
+				id = "employee-" + id
+			} else {
+				h.ServeHTTP(w, r)
+				return
+			}
+
 			res, err := cache.Get(r.Context(), id).Result()
 			if err == nil {
 				log.Println("Cache hit for key:", id)
