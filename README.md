@@ -26,6 +26,14 @@ To run this commands, you will need official postgres and mongo images.
 #### migration
 To work on with PostgreSQL database, make sure to migrate up, change DB_URL connection variable in makefile as your postgres configuration and then run:
 
+### redis
+
+Create docker container for redis with following command:
+
+```
+docker run -d --name redis -p 6379:6379 redis redis-server --requirepass "12345"
+```
+
 ```make migrate-up```
 
 ### Configs
@@ -48,6 +56,9 @@ export REDIS_HOST=localhost
 export POSTGRES_DB=postgres
 export POSTGRES_PASSWORD=12345
 export POSTGRES_USER=postgres
+export REDIS_PASSWORD=12345
+export REDIS_PORT=6379
+export DATABASE_TYPE=postgres
 ```
 
 After initializing all the necessary dependencies, you can run project:

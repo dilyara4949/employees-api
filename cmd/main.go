@@ -2,11 +2,17 @@ package main
 
 import (
 	"fmt"
+
 	mongoDB "github.com/dilyara4949/employees-api/internal/database/mongo"
 	"github.com/dilyara4949/employees-api/internal/database/postgres"
+	"github.com/dilyara4949/employees-api/internal/database/redis"
 	"github.com/dilyara4949/employees-api/internal/domain"
 	"github.com/dilyara4949/employees-api/internal/grpc/server"
 	"github.com/dilyara4949/employees-api/internal/repository/postgres/employee"
+
+	"log"
+	"net"
+	"net/http"
 
 	mongoemployee "github.com/dilyara4949/employees-api/internal/repository/mongo/employee"
 	mongoposition "github.com/dilyara4949/employees-api/internal/repository/mongo/position"
@@ -14,9 +20,6 @@ import (
 	pb "github.com/dilyara4949/employees-api/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"net/http"
 
 	conf "github.com/dilyara4949/employees-api/internal/config"
 	"github.com/dilyara4949/employees-api/internal/controller"
@@ -28,6 +31,11 @@ func main() {
 	config, err := conf.NewConfig()
 	if err != nil {
 		log.Fatalf("Error while getting config: %s", err)
+	}
+
+	cache, err := redis.ConnectRedis(config.RedisConfig)
+	if err != nil {
+		log.Fatalf("error to connect redis: %v", err)
 	}
 
 	var positionRepo domain.PositionsRepository
@@ -51,11 +59,9 @@ func main() {
 
 		positionRepo = mongoposition.NewPositionsRepository(db, config.MongoConfig.Collections.Positions, config.MongoConfig.Collections.Employees)
 		employeeRepo = mongoemployee.NewEmployeesRepository(db, config.MongoConfig.Collections.Employees, config.MongoConfig.Collections.Positions)
-
 	default:
-		log.Fatalf("%s is unknown database", config.DatabaseType)
+		log.Fatalf("%s is unknown database (DATABASE_TYPE is unknown)", config.DatabaseType)
 	}
-
 	log.Println("Successfully connected to database")
 
 	go func() {
@@ -90,7 +96,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	route.SetUpRouter(employeeController, positionController, config, mux)
+	route.SetUpRouter(employeeController, positionController, config, mux, cache)
 
 	log.Printf("Starting server on :%s", config.RestPort)
 

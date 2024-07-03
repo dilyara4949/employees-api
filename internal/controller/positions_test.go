@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -57,7 +56,6 @@ func (p posRepoMock) Delete(_ context.Context, id string) error {
 func (p posRepoMock) GetAll(_ context.Context, page, pageSize int64) ([]domain.Position, error) {
 	if p.err != nil {
 
-		log.Println(p.err)
 		return nil, p.err
 	}
 
@@ -285,6 +283,7 @@ func TestPositionsController_UpdatePosition(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			if res := string(response); res != tt.expected {
 				t.Fatalf(`expected "%s", got "%s"`, tt.expected, res)
 			}
