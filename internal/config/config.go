@@ -61,22 +61,29 @@ const (
 )
 
 var (
-	errMissingRestPort       = errors.New("REST_PORT is empty")
-	errMissingAddress        = errors.New("ADDRESS is empty")
-	errMissingJWTTokenSecret = errors.New("JWT_TOKEN_SECRET is empty")
-	errMissingGrpcPort       = errors.New("GRPC_PORT is empty")
-	errMissingDbHost         = errors.New("DB_HOST is empty")
-	errMissingDbPort         = errors.New("DB_PORT is empty")
-	errMissingDbName         = errors.New("DB_USER is empty")
-	errMissingDbUser         = errors.New("DB_USER is empty")
-	errMissingDbPassword     = errors.New("DB_PASSWORD is empty")
-	errMissingDbTimeout      = errors.New("DB_TIMEOUT is empty")
-	errMissingDbMaxConn      = errors.New("DB_MAX_CONNECTIONS is empty")
-	errMaxConnType           = errors.New("DB_MAX_CONNECTIONS must be an integer")
-	errDbTimeoutType         = errors.New("DB_TIMEOUT must be an integer")
-	errMissingRedisHost      = errors.New("REDIS_HOST is empty")
-	errMissingRedisPort      = errors.New("REDIS_PORT is empty")
-	errMissingRedisPass      = errors.New("REDIS_PASSWORD is empty")
+	errMissingRestPort         = errors.New("REST_PORT is empty")
+	errMissingAddress          = errors.New("ADDRESS is empty")
+	errMissingJWTTokenSecret   = errors.New("JWT_TOKEN_SECRET is empty")
+	errMissingGrpcPort         = errors.New("GRPC_PORT is empty")
+	errMissingMongoHost        = errors.New("MONGO_HOST is empty")
+	errMissingPostgresHost     = errors.New("POSTGRES_HOST is empty")
+	errMissingMongoPort        = errors.New("MONGO_PORT is empty")
+	errMissingPostgresPort     = errors.New("POSTGRES_PORT is empty")
+	errMissingMongoName        = errors.New("Mongo_USER is empty")
+	errMissingPostgresName     = errors.New("POSTGRES_USER is empty")
+	errMissingMongoUser        = errors.New("MONGO_USER is empty")
+	errMissingPostgresUser     = errors.New("POSTGRES_USER is empty")
+	errMissingMongoPassword    = errors.New("MONGO_PASSWORD is empty")
+	errMissingPostgresPassword = errors.New("POSTGRES_PASSWORD is empty")
+	errMissingMongoTimeout     = errors.New("MONGO_TIMEOUT is empty")
+	errMissingPostgresTimeout  = errors.New("POSTGRES_TIMEOUT is empty")
+	errMissingPostgresMaxConn  = errors.New("POSTGRES_MAX_CONNECTIONS is empty")
+	errPostgresMaxConnType     = errors.New("POSTGRES_MAX_CONNECTIONS must be an integer")
+	errMongoTimeoutType        = errors.New("MONGO_TIMEOUT must be an integer")
+	errPostgresTimeoutType     = errors.New("POSTGRES_TIMEOUT must be an integer")
+	errMissingRedisHost        = errors.New("REDIS_HOST is empty")
+	errMissingRedisPort        = errors.New("REDIS_PORT is empty")
+	errMissingRedisPass        = errors.New("REDIS_PASSWORD is empty")
 )
 
 const (
@@ -90,13 +97,19 @@ const (
 	grpcPortEnv         = "GRPC_PORT"
 	addressEnv          = "ADDRESS"
 	databaseTypeEnv     = "DATABASE_TYPE"
-	dbHostEnv           = "DB_HOST"
-	dbPortEnv           = "DB_PORT"
-	dbUserEnv           = "DB_USER"
-	dbPasswordEnv       = "DB_PASSWORD"
-	dbNameEnv           = "DB_NAME"
-	dbTimeoutEnv        = "DB_TIMEOUT"
-	dbMaxConnEnv        = "DB_MAX_CONNECTIONS"
+	mongoHostEnv        = "MONGO_HOST"
+	mongoPortEnv        = "MONGO_PORT"
+	mongoUserEnv        = "MONGO_USER"
+	mongoPasswordEnv    = "MONGO_PASSWORD"
+	mongoNameEnv        = "MONGO_NAME"
+	mongoTimeoutEnv     = "MONGO_TIMEOUT"
+	postgresHostEnv     = "POSTGRES_HOST"
+	postgresPortEnv     = "POSTGRES_PORT"
+	postgresUserEnv     = "POSTGRES_USER"
+	postgresPasswordEnv = "POSTGRES_PASSWORD"
+	postgresNameEnv     = "POSTGRES_NAME"
+	postgresTimeoutEnv  = "POSTGRES_TIMEOUT"
+	postgresMaxConnEnv  = "POSTGRES_MAX_CONNECTIONS"
 	posCollectionEnv    = "POSITIONS_COLLECTION"
 	empCollectionEnv    = "EMPLOYEES_COLLECTION"
 	redisHostEnv        = "REDIS_HOST"
@@ -131,49 +144,84 @@ func NewConfig() (Config, error) {
 		errs = append(errs, errMissingAddress)
 	}
 
-	DbHost := os.Getenv(dbHostEnv)
-	if DbHost == "" {
-		errs = append(errs, errMissingDbHost)
+	mongoHost := os.Getenv(mongoHostEnv)
+	if mongoHost == "" {
+		errs = append(errs, errMissingMongoHost)
 	}
 
-	DbPort := os.Getenv(dbPortEnv)
-	if DbPort == "" {
-		errs = append(errs, errMissingDbPort)
+	postgresHost := os.Getenv(postgresHostEnv)
+	if postgresHost == "" {
+		errs = append(errs, errMissingPostgresHost)
 	}
 
-	DbUser := os.Getenv(dbUserEnv)
-	if DbUser == "" {
-		errs = append(errs, errMissingDbUser)
+	mongoPort := os.Getenv(mongoPortEnv)
+	if mongoPort == "" {
+		errs = append(errs, errMissingMongoPort)
 	}
 
-	DbPassword := os.Getenv(dbPasswordEnv)
-	if DbPassword == "" {
-		errs = append(errs, errMissingDbPassword)
+	mongoUser := os.Getenv(mongoUserEnv)
+	if mongoUser == "" {
+		errs = append(errs, errMissingMongoUser)
 	}
 
-	DbName := os.Getenv(dbNameEnv)
-	if DbName == "" {
-		errs = append(errs, errMissingDbName)
+	mongoPassword := os.Getenv(mongoPasswordEnv)
+	if mongoPassword == "" {
+		errs = append(errs, errMissingMongoPassword)
 	}
 
-	DbTimeoutStr := os.Getenv(dbTimeoutEnv)
-	if DbTimeoutStr == "" {
-		errs = append(errs, errMissingDbTimeout)
+	mongoName := os.Getenv(mongoNameEnv)
+	if mongoName == "" {
+		errs = append(errs, errMissingMongoName)
 	}
 
-	DbTimeout, err := strconv.Atoi(DbTimeoutStr)
+	mongoTimeoutStr := os.Getenv(mongoTimeoutEnv)
+	if mongoTimeoutStr == "" {
+		errs = append(errs, errMissingMongoTimeout)
+	}
+
+	mongoTimeout, err := strconv.Atoi(mongoTimeoutStr)
 	if err != nil {
-		errs = append(errs, errDbTimeoutType)
+		errs = append(errs, errMongoTimeoutType)
 	}
 
-	DbMaxConnStr := os.Getenv(dbMaxConnEnv)
-	if DbMaxConnStr == "" {
-		errs = append(errs, errMissingDbMaxConn)
+	postgresPort := os.Getenv(postgresPortEnv)
+	if postgresPort == "" {
+		errs = append(errs, errMissingPostgresPort)
 	}
 
-	DbMaxconn, err := strconv.Atoi(DbMaxConnStr)
+	postgresUser := os.Getenv(postgresUserEnv)
+	if postgresUser == "" {
+		errs = append(errs, errMissingPostgresUser)
+	}
+
+	postgresPassword := os.Getenv(postgresPasswordEnv)
+	if postgresPassword == "" {
+		errs = append(errs, errMissingPostgresPassword)
+	}
+
+	postgresName := os.Getenv(postgresNameEnv)
+	if postgresName == "" {
+		errs = append(errs, errMissingPostgresName)
+	}
+
+	postgresTimeoutStr := os.Getenv(postgresTimeoutEnv)
+	if postgresTimeoutStr == "" {
+		errs = append(errs, errMissingPostgresTimeout)
+	}
+
+	postgresTimeout, err := strconv.Atoi(postgresTimeoutStr)
 	if err != nil {
-		errs = append(errs, errMaxConnType)
+		errs = append(errs, errPostgresTimeoutType)
+	}
+
+	postgresMaxConnStr := os.Getenv(postgresMaxConnEnv)
+	if postgresMaxConnStr == "" {
+		errs = append(errs, errMissingPostgresMaxConn)
+	}
+
+	postgresMaxconn, err := strconv.Atoi(postgresMaxConnStr)
+	if err != nil {
+		errs = append(errs, errPostgresMaxConnType)
 	}
 
 	posCollection := os.Getenv(posCollectionEnv)
@@ -245,38 +293,31 @@ func NewConfig() (Config, error) {
 			Timeout:  time.Duration(redisTimeout) * time.Second,
 			Ttl:      time.Duration(redisTtl) * time.Hour,
 		},
-	}
-
-	switch dbType {
-	case PostgresDB:
-		cfg.PostgresConfig = PostgresConfig{
+		PostgresConfig: PostgresConfig{
 			DB{
-				DbHost,
-				DbPort,
-				DbUser,
-				DbPassword,
-				DbName,
-				DbTimeout,
+				postgresHost,
+				postgresPort,
+				postgresUser,
+				postgresPassword,
+				postgresName,
+				postgresTimeout,
 			},
-			DbMaxconn,
-		}
-	case MongoDB:
-		cfg.MongoConfig = MongoConfig{
+			postgresMaxconn,
+		},
+		MongoConfig: MongoConfig{
 			DB{
-				DbHost,
-				DbPort,
-				DbUser,
-				DbPassword,
-				DbName,
-				DbTimeout,
+				mongoHost,
+				mongoPort,
+				mongoUser,
+				mongoPassword,
+				mongoName,
+				mongoTimeout,
 			},
 			Collections{
 				posCollection,
 				empCollection,
 			},
-		}
-	default:
-		return Config{}, errors.New("incorrect database")
+		},
 	}
 
 	return cfg, nil
