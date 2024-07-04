@@ -12,6 +12,7 @@ func TestChain(t *testing.T) {
 		endpoint    http.HandlerFunc
 		middlewares []Middleware
 	}
+
 	tests := []struct {
 		name     string
 		args     args
@@ -78,6 +79,7 @@ func TestChain(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			chain.ServeHTTP(responseRecorder, req)
 
 			defer responseRecorder.Result().Body.Close()

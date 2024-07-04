@@ -59,6 +59,7 @@ func (e *employeeRepository) Get(ctx context.Context, id string) (*domain.Employ
 	defer cancel()
 
 	employee := domain.Employee{}
+
 	err := e.employeeCollection.FindOne(ctx, bson.M{"id": id}).Decode(&employee)
 	if err != nil {
 		return nil, errors.Join(err)
@@ -129,12 +130,14 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 	for cur.Next(ctx) {
 		emp := domain.Employee{}
 		err := cur.Decode(&emp)
+
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		employees = append(employees, emp)
 	}
+
 	if err := cur.Err(); err != nil {
 		return nil, err
 	}
@@ -148,6 +151,7 @@ func (e *employeeRepository) GetByPosition(ctx context.Context, positionId strin
 
 	employee := domain.Employee{}
 	err := e.employeeCollection.FindOne(ctx, bson.M{"position_id": positionId}).Decode(&employee)
+
 	if err != nil {
 		return nil, errors.Join(err)
 	}

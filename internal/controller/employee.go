@@ -162,6 +162,7 @@ func (c *EmployeesController) GetAllEmployees(w http.ResponseWriter, r *http.Req
 	if page <= 0 {
 		page = pageDefault
 	}
+
 	if pageSize <= 0 {
 		pageSize = pageSizeDefault
 	}

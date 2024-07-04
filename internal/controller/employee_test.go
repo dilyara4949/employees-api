@@ -114,7 +114,7 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -123,6 +123,7 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)
@@ -170,7 +171,7 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("POST", fmt.Sprintf("%s/employees", svr.URL), strings.NewReader(tt.body))
+			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/employees", svr.URL), strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
 			}
@@ -180,6 +181,7 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)
@@ -224,7 +226,7 @@ func TestEmployeesController_DeleteEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -234,6 +236,7 @@ func TestEmployeesController_DeleteEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			if resp.StatusCode != tt.expectedCode {
@@ -289,7 +292,7 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("PUT", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), strings.NewReader(tt.body))
+			req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
 			}
@@ -299,6 +302,7 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)

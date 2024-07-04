@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/dilyara4949/employees-api/internal/domain"
@@ -105,13 +106,15 @@ func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) 
 	defer rows.Close()
 
 	positions := make([]domain.Position, 0)
+
 	for rows.Next() {
 		position := domain.Position{}
 
 		err = rows.Scan(&position.ID, &position.Name, &position.Salary)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan: %v", err)
 		}
+
 		positions = append(positions, position)
 	}
 	return positions, nil

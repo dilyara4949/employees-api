@@ -101,6 +101,7 @@ func (p *positionsRepository) Delete(ctx context.Context, id string) error {
 
 	employee := domain.Employee{}
 	err := p.employeeCollection.FindOne(ctx, bson.M{"position_id": id}).Decode(&employee)
+
 	if err == nil {
 		return errors.New("position in use by employee")
 	}
@@ -141,6 +142,7 @@ func (p *positionsRepository) GetAll(ctx context.Context, page, pageSize int64) 
 
 		positions = append(positions, pos)
 	}
+
 	if err := cur.Err(); err != nil {
 		return nil, err
 	}

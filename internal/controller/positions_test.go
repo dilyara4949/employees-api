@@ -95,7 +95,7 @@ func TestPositionsController_GetPosition(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", svr.URL, tt.id), http.NoBody)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
 			}

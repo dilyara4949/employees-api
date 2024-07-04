@@ -108,6 +108,7 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 	defer rows.Close()
 
 	employees := make([]domain.Employee, 0)
+
 	for rows.Next() {
 		employee := domain.Employee{}
 
@@ -115,6 +116,7 @@ func (e *employeeRepository) GetAll(ctx context.Context, page, pageSize int64) (
 		if err != nil {
 			return nil, err
 		}
+
 		employees = append(employees, employee)
 	}
 	return employees, nil

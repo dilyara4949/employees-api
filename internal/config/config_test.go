@@ -14,7 +14,6 @@ func TestNewConfig(t *testing.T) {
 		want    Config
 		wantErr error
 	}{
-
 		{
 			name: "OK postgres",
 			input: map[string]string{

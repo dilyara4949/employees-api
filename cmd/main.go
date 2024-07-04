@@ -39,6 +39,7 @@ func main() {
 	}
 
 	var positionRepo domain.PositionsRepository
+
 	var employeeRepo domain.EmployeesRepository
 
 	switch config.DatabaseType {
@@ -62,6 +63,7 @@ func main() {
 	default:
 		log.Fatalf("%s is unknown database (DATABASE_TYPE is unknown)", config.DatabaseType)
 	}
+
 	log.Println("Successfully connected to database")
 
 	go func() {

@@ -32,6 +32,7 @@ func (s *EmployeeServer) GetAll(ctx context.Context, req *pb.GetAllEmployeesRequ
 	if page <= 0 {
 		page = pageDefault
 	}
+
 	if pageSize <= 0 {
 		pageSize = pageSizeDefault
 	}
