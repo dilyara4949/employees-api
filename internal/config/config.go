@@ -69,8 +69,8 @@ var (
 	errMissingPostgresHost     = errors.New("POSTGRES_HOST is empty")
 	errMissingMongoPort        = errors.New("MONGO_PORT is empty")
 	errMissingPostgresPort     = errors.New("POSTGRES_PORT is empty")
-	errMissingMongoName        = errors.New("Mongo_USER is empty")
-	errMissingPostgresName     = errors.New("POSTGRES_USER is empty")
+	errMissingMongoName        = errors.New("MONGO_NAME is empty")
+	errMissingPostgresName     = errors.New("POSTGRES_NAME is empty")
 	errMissingMongoUser        = errors.New("MONGO_USER is empty")
 	errMissingPostgresUser     = errors.New("POSTGRES_USER is empty")
 	errMissingMongoPassword    = errors.New("MONGO_PASSWORD is empty")
@@ -107,7 +107,7 @@ const (
 	postgresPortEnv     = "POSTGRES_PORT"
 	postgresUserEnv     = "POSTGRES_USER"
 	postgresPasswordEnv = "POSTGRES_PASSWORD"
-	postgresNameEnv     = "POSTGRES_NAME"
+	postgresNameEnv     = "POSTGRES_DB"
 	postgresTimeoutEnv  = "POSTGRES_TIMEOUT"
 	postgresMaxConnEnv  = "POSTGRES_MAX_CONNECTIONS"
 	posCollectionEnv    = "POSITIONS_COLLECTION"

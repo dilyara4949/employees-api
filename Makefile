@@ -1,5 +1,7 @@
 DB_URL=postgres://postgres:12345@localhost:5432/postgres?sslmode=disable
 TEST_DB_URL=postgres://postgres:12345@localhost:5432/testpostgres?sslmode=disable
+GOLANGCILINT ?= docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v1.57.2 golangci-lint
+
 
 .PHONY: migrate-up migrate-down create-migration proto lint
 
@@ -10,15 +12,15 @@ run:
 	go run cmd/main.go
 
 lint:
-	 golangci-lint run --enable-all
+	  $(GOLANGCILINT) run -v --enable-all
 
 testall:
 	go test -v ./...
 
-htmlcov:
+htmlcover:
 	go tool cover -html=coverage.out
 
-testcov:
+testcover:
 	go test -v -covermode=count -coverprofile=coverage.out ./...
 
 migrate-up:
@@ -31,10 +33,10 @@ migrate-test-up:
 	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations up
 
 migrate-docker-down:
-	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_NAME}?sslmode=disable" down
+	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_NAME}?sslmode=disable" down
 
 migrate-docker-up:
-	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_NAME}?sslmode=disable" up
+	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_NAME}?sslmode=disable" up
 
 migrate-test-down:
 	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations down
