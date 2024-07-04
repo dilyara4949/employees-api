@@ -78,7 +78,9 @@ REDIS_POOL_SIZE=10
 
 ```
 
-If you are running project on docker compose, change database hosts to their service names, like: 
+
+
+If you are running project on docker compose, all the env vars should be in .env file, also do not forget to change database hosts to their service names, like: 
 ```
 REDIS_HOST=redis
 POSTGRES_HOST=db-postgres
@@ -89,3 +91,20 @@ After initializing all the necessary dependencies, you can run project:
 ```
 go run cmd/main.go
 ```
+
+
+
+### Testing
+
+To test unit tests, use:
+```
+make testall 
+```
+
+to test integration tests:
+``` 
+make testintegration
+```
+
+Don't forget to change database names for integration tests
+Before running integration tests, make sure to export all the necessary variables

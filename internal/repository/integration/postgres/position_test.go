@@ -238,6 +238,13 @@ func TestPositionRepository_Delete(t *testing.T) {
 		t.Errorf("error to init data: %v", err)
 	}
 
+	defer func() {
+		err := deleteDataPos(positionRepo, poss)
+		if err != nil {
+			log.Printf("error at deleting helper data: %v", err)
+		}
+	}()
+
 	tests := []struct {
 		name        string
 		positions   []domain.Position

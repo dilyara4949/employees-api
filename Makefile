@@ -17,6 +17,9 @@ lint:
 testall:
 	go test -v ./...
 
+testintegration:
+	go test -v ./... -run TestEmployeeRepository_ -run TestPositionRepository_ -tags=integration
+
 htmlcover:
 	go tool cover -html=coverage.out
 
