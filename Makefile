@@ -33,10 +33,10 @@ migrate-test-up:
 	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations up
 
 migrate-docker-down:
-	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_NAME}?sslmode=disable" down
+	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable" down
 
 migrate-docker-up:
-	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_NAME}?sslmode=disable" up
+	docker-compose run app migrate -path ./internal/database/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-postgres:5432/${POSTGRES_DB}?sslmode=disable" up
 
 migrate-test-down:
 	migrate -database $(TEST_DB_URL) -path internal/database/postgres/migrations down

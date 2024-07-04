@@ -41,40 +41,40 @@ docker run -d --name redis -p 6379:6379 redis redis-server --requirepass "12345"
 Do not forget to set all needed configuration variables, for example: 
 
 ```
-export JWT_TOKEN_SECRET=my_secret_key
+JWT_TOKEN_SECRET=my_secret_key
 
-export REST_PORT=8080
-export GRPC_PORT=50051
+REST_PORT=8080
+GRPC_PORT=50051
 
-export ADDRESS=0.0.0.0
+ADDRESS=0.0.0.0
 
-export DATABASE_TYPE=postgres
+DATABASE_TYPE=postgres
 
-export MONGO_HOST=localhost
-export MONGO_PORT=27017
-export MONGO_USER=mongo
-export MONGO_PASSWORD=12345
-export MONGO_NAME=mongo
-export MONGO_TIMEOUT=30
-export POSITIONS_COLLECTION=positions
-export EMPLOYEES_COLLECTION=employees
+MONGO_HOST=localhost
+MONGO_PORT=27017
+MONGO_USER=mongo
+MONGO_PASSWORD=12345
+MONGO_NAME=mongo
+MONGO_TIMEOUT=30
+POSITIONS_COLLECTION=positions
+EMPLOYEES_COLLECTION=employees
 
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
-export POSTGRES_USER=postgres
-export POSTGRES_PASSWORD=12345
-export POSTGRES_NAME=postgres
-export POSTGRES_TIMEOUT=30
-export POSTGRES_MAX_CONNECTIONS=20
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=12345
+POSTGRES_DB=postgres
+POSTGRES_TIMEOUT=30
+POSTGRES_MAX_CONNECTIONS=20
 
 
-export REDIS_HOST=localhost
-export REDIS_PORT=6379
-export REDIS_PASSWORD=12345
-export REDIS_TIMEOUT=10
-export REDIS_TTL=5
-export REDIS_DATABASE=0
-export REDIS_POOL_SIZE=10
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=12345
+REDIS_TIMEOUT=10
+REDIS_TTL=5
+REDIS_DATABASE=0
+REDIS_POOL_SIZE=10
 
 ```
 
