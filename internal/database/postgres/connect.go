@@ -11,7 +11,6 @@ import (
 
 func ConnectPostgres(cfg config.PostgresConfig) (*sql.DB, error) {
 	url := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name)
-	fmt.Println(url)
 	db, err := sql.Open("postgres", url)
 
 	if err != nil {
