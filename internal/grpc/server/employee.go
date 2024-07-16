@@ -20,8 +20,24 @@ func NewEmployeeServer(repo domain.EmployeesRepository) *EmployeeServer {
 	}
 }
 
-func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.EmployeesList, error) {
-	employees, err := s.Repo.GetAll(ctx)
+const (
+	pageDefault     = 1
+	pageSizeDefault = 50
+)
+
+func (s *EmployeeServer) GetAll(ctx context.Context, req *pb.GetAllEmployeesRequest) (*pb.EmployeesList, error) {
+	page := req.GetPage()
+	pageSize := req.GetPageSize()
+
+	if page <= 0 {
+		page = pageDefault
+	}
+
+	if pageSize <= 0 {
+		pageSize = pageSizeDefault
+	}
+
+	employees, err := s.Repo.GetAll(ctx, page, pageSize)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -30,7 +46,7 @@ func (s *EmployeeServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.Emplo
 	for i, emp := range employees {
 		employeeProtos[i] = employeeToProto(&emp)
 	}
-	return &pb.EmployeesList{Employee: employeeProtos}, nil
+	return &pb.EmployeesList{Employee: employeeProtos, Page: page, PageSize: pageSize}, nil
 }
 
 func (s *EmployeeServer) Get(ctx context.Context, id *pb.Id) (*pb.Employee, error) {
@@ -52,7 +68,7 @@ func (s *EmployeeServer) Create(ctx context.Context, emp *pb.Employee) (*pb.Empl
 
 	employee := protoToEmployee(emp)
 
-	err := s.Repo.Create(ctx, employee)
+	employee, err := s.Repo.Create(ctx, *employee)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

@@ -29,8 +29,8 @@ func logCorrelationIDTimer(endpoint http.HandlerFunc, config conf.Config, cache 
 	middlewares := []middleware.Middleware{
 		middleware.Cache(cache, config.RedisConfig.Ttl),
 		auth.Auth(),
-		middleware.Logger(),
 		middleware.Timer(),
+		middleware.Logger(),
 		middleware.CorrelationIDMiddleware(),
 	}
 

@@ -14,8 +14,19 @@ type PositionServer struct {
 	pb.UnimplementedPositionServiceServer
 }
 
-func (s *PositionServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.PositionsList, error) {
-	positions, err := s.Repo.GetAll(ctx)
+func (s *PositionServer) GetAll(ctx context.Context, req *pb.GetAllPositionsRequest) (*pb.PositionsList, error) {
+	page := req.GetPage()
+	pageSize := req.GetPageSize()
+
+	if page <= 0 {
+		page = pageDefault
+	}
+
+	if pageSize <= 0 {
+		pageSize = pageSizeDefault
+	}
+
+	positions, err := s.Repo.GetAll(ctx, page, pageSize)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -24,7 +35,7 @@ func (s *PositionServer) GetAll(ctx context.Context, empty *pb.Empty) (*pb.Posit
 	for i, pos := range positions {
 		positionProtos[i] = positionToProto(&pos)
 	}
-	return &pb.PositionsList{Position: positionProtos}, nil
+	return &pb.PositionsList{Position: positionProtos, Page: page, PageSize: pageSize}, nil
 }
 
 func NewPositionServer(repo domain.PositionsRepository) *PositionServer {
@@ -52,7 +63,7 @@ func (s *PositionServer) Create(ctx context.Context, pos *pb.Position) (*pb.Posi
 
 	position := protoToPosition(pos)
 
-	err := s.Repo.Create(ctx, position)
+	position, err := s.Repo.Create(ctx, *position)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

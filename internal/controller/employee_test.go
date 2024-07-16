@@ -17,12 +17,17 @@ type empRepoMock struct {
 	err error
 }
 
-func (e empRepoMock) Create(_ context.Context, employee *domain.Employee) error {
+func (e empRepoMock) Create(_ context.Context, employee domain.Employee) (*domain.Employee, error) {
 	if e.err != nil {
-		return e.err
+		return nil, e.err
 	}
 
-	return nil
+	return &domain.Employee{
+		ID:         "id",
+		FirstName:  "first name",
+		LastName:   "last name",
+		PositionID: "position id",
+	}, nil
 }
 
 func (e empRepoMock) Get(_ context.Context, id string) (*domain.Employee, error) {
@@ -54,7 +59,7 @@ func (e empRepoMock) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-func (e empRepoMock) GetAll(_ context.Context) ([]domain.Employee, error) {
+func (e empRepoMock) GetAll(_ context.Context, page, pageSize int64) ([]domain.Employee, error) {
 	if e.err != nil {
 		return nil, e.err
 	}
@@ -66,6 +71,19 @@ func (e empRepoMock) GetAll(_ context.Context) ([]domain.Employee, error) {
 			LastName:   "last name",
 			PositionID: "position id",
 		},
+	}, nil
+}
+
+func (e empRepoMock) GetByPosition(_ context.Context, id string) (*domain.Employee, error) {
+	if e.err != nil {
+		return nil, e.err
+	}
+
+	return &domain.Employee{
+		ID:         "id",
+		FirstName:  "first name",
+		LastName:   "last name",
+		PositionID: "position id",
 	}, nil
 }
 
@@ -96,7 +114,7 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -105,6 +123,7 @@ func TestEmployeesController_GetEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)
@@ -152,7 +171,7 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("POST", fmt.Sprintf("%s/employees", svr.URL), strings.NewReader(tt.body))
+			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/employees", svr.URL), strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
 			}
@@ -162,6 +181,7 @@ func TestEmployeesController_CreateEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)
@@ -206,7 +226,7 @@ func TestEmployeesController_DeleteEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -216,6 +236,7 @@ func TestEmployeesController_DeleteEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			if resp.StatusCode != tt.expectedCode {
@@ -271,7 +292,7 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("PUT", fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), strings.NewReader(tt.body))
+			req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/employees/%s", svr.URL, tt.id), strings.NewReader(tt.body))
 			if err != nil {
 				t.Fatalf("Error while making request: %s", err)
 			}
@@ -281,6 +302,7 @@ func TestEmployeesController_UpdateEmployee(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			defer resp.Body.Close()
 
 			response, err := io.ReadAll(resp.Body)

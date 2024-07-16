@@ -2,9 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/dilyara4949/employees-api/internal/domain"
 	"io"
 	"net/http"
+	"strconv"
+
+	"github.com/dilyara4949/employees-api/internal/domain"
 )
 
 type PositionsController struct {
@@ -22,6 +24,11 @@ func (c *PositionsController) GetPosition(w http.ResponseWriter, r *http.Request
 	}
 
 	positionID := r.PathValue("id")
+	if positionID == "" {
+		errorHandler(w, r, &HTTPError{Detail: "error at getting position: id is incorrect", Status: http.StatusBadRequest})
+		return
+	}
+
 	position, err := c.Repo.Get(r.Context(), positionID)
 
 	if err != nil {
@@ -52,13 +59,13 @@ func (c *PositionsController) CreatePosition(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var position domain.Position
+	var position *domain.Position
 	if err := json.Unmarshal(body, &position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "invalid request body", Status: http.StatusBadRequest, Cause: err})
 		return
 	}
 
-	if err = c.Repo.Create(r.Context(), &position); err != nil {
+	if position, err = c.Repo.Create(r.Context(), *position); err != nil {
 		errorHandler(w, r, &HTTPError{Detail: "error creating position", Status: http.StatusInternalServerError, Cause: err})
 		return
 	}
@@ -81,6 +88,11 @@ func (c *PositionsController) DeletePosition(w http.ResponseWriter, r *http.Requ
 	}
 
 	positionID := r.PathValue("id")
+	if positionID == "" {
+		errorHandler(w, r, &HTTPError{Detail: "error at deleting position: id is incorrect", Status: http.StatusBadRequest})
+		return
+	}
+
 	err := c.Repo.Delete(r.Context(), positionID)
 
 	if err != nil {
@@ -99,7 +111,7 @@ func (c *PositionsController) UpdatePosition(w http.ResponseWriter, r *http.Requ
 
 	positionID := r.PathValue("id")
 	if positionID == "" {
-		errorHandler(w, r, &HTTPError{Detail: "missing position ID", Status: http.StatusBadRequest})
+		errorHandler(w, r, &HTTPError{Detail: "error at updating position: id is incorrect", Status: http.StatusBadRequest})
 		return
 	}
 
@@ -138,9 +150,20 @@ func (c *PositionsController) GetAllPositions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	positions, err := c.Repo.GetAll(r.Context())
+	page, _ := strconv.ParseInt(r.URL.Query().Get("page"), 10, 64)
+	pageSize, _ := strconv.ParseInt(r.URL.Query().Get("size"), 10, 64)
+
+	if page <= 0 {
+		page = pageDefault
+	}
+	if pageSize <= 0 {
+		pageSize = pageSizeDefault
+	}
+
+	positions, err := c.Repo.GetAll(r.Context(), page, pageSize)
 	if err != nil {
-		errorHandler(w, r, &HTTPError{Detail: "error at get all positions", Status: http.StatusInternalServerError})
+		errorHandler(w, r, &HTTPError{Detail: "error at getting all positions", Status: http.StatusInternalServerError, Cause: err})
+		return
 	}
 
 	response, err := json.Marshal(positions)

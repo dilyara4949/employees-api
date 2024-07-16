@@ -17,11 +17,15 @@ type posRepoMock struct {
 	err error
 }
 
-func (p posRepoMock) Create(_ context.Context, position *domain.Position) error {
+func (p posRepoMock) Create(_ context.Context, position domain.Position) (*domain.Position, error) {
 	if p.err != nil {
-		return p.err
+		return nil, p.err
 	}
-	return nil
+	return &domain.Position{
+		ID:     "id",
+		Name:   "name",
+		Salary: 100,
+	}, nil
 }
 
 func (p posRepoMock) Get(_ context.Context, id string) (*domain.Position, error) {
@@ -49,8 +53,9 @@ func (p posRepoMock) Delete(_ context.Context, id string) error {
 	return nil
 }
 
-func (p posRepoMock) GetAll(_ context.Context) ([]domain.Position, error) {
+func (p posRepoMock) GetAll(_ context.Context, page, pageSize int64) ([]domain.Position, error) {
 	if p.err != nil {
+
 		return nil, p.err
 	}
 
@@ -90,7 +95,7 @@ func TestPositionsController_GetPosition(t *testing.T) {
 			svr := httptest.NewServer(mux)
 			defer svr.Close()
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", svr.URL, tt.id), http.NoBody)
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/%s", svr.URL, tt.id), http.NoBody)
 			if err != nil {
 				t.Fatal(err)
 			}

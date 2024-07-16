@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -25,4 +26,12 @@ func CorrelationIDMiddleware() Middleware {
 			h.ServeHTTP(w, r)
 		}
 	}
+}
+
+func VerifyCorrelation(ctx context.Context) (any, error) {
+	id := ctx.Value(CorrelationID)
+	if id == nil {
+		return "", errors.New("correlation id set incorrect")
+	}
+	return id, nil
 }
